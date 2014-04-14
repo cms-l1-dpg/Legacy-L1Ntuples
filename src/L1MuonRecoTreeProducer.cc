@@ -1,9 +1,6 @@
-// -*- C++ -*-
-//
-// Package:    UserCode/L1TriggerDPG
-// Class:      L1MuonRecoTreeProducer
-// 
-/**\class L1MuonRecoTreeProducer L1MuonRecoTreeProducer.cc UserCode/L1TriggerDPG/src/L1MuonRecoTreeProducer.cc
+// -*- C++ -*- // // Package: UserCode/L1TriggerDPG // Class: L1MuonRecoTreeProducer // /**\class L1MuonRecoTreeProducer L1MuonRecoTreeProducer.cc 
+/*
+UserCode/L1TriggerDPG/src/L1MuonRecoTreeProducer.cc
 
  Description: Produce Muon Reco tree
 
@@ -115,6 +112,8 @@ public:
   void empty_global();
   void empty_tracker();
   void empty_standalone();
+  void empty_hlt();
+
   double match_trigger(std::vector<int> &trigIndices, const trigger::TriggerObjectCollection &trigObjs, 
     edm::Handle<trigger::TriggerEvent>  &triggerEvent, const reco::Muon &mu);
 
@@ -189,6 +188,8 @@ private:
   
   // tree
   TTree * tree_;
+
+  bool runOnPostLS1_;
   
   // EDM input tags
   edm::InputTag muonTag_;
@@ -206,6 +207,8 @@ L1MuonRecoTreeProducer::L1MuonRecoTreeProducer(const edm::ParameterSet& iConfig)
 
   muonTag_   = iConfig.getParameter<edm::InputTag>("muonTag");
   rpcHitTag_ = iConfig.getParameter<edm::InputTag>("rpcHitTag");
+
+  runOnPostLS1_ = iConfig.getParameter<bool>("runOnPostLS1");
 
   muon = new L1Analysis::L1AnalysisRecoMuon();
   muonData = muon->getData();
@@ -406,6 +409,15 @@ void L1MuonRecoTreeProducer::empty_standalone(){
 
 }
 
+void L1MuonRecoTreeProducer::empty_hlt(){
+
+        muonData->hlt_isomu.push_back(-999999);
+        muonData->hlt_mu.push_back(-999999);
+        muonData->hlt_isoDeltaR.push_back(-9999999);
+        muonData->hlt_deltaR.push_back(-999999);
+
+}
+
 
 //
 // ------------ method called to for each event  ------------
@@ -515,7 +527,6 @@ L1MuonRecoTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup&
   iSetup.get<TrackingComponentsRecord>().get("SmartPropagatorAny", propagatorAlong   );
   iSetup.get<TrackingComponentsRecord>().get("SmartPropagatorAnyOpposite", propagatorOpposite);
 
-
   for(reco::MuonCollection::const_iterator imu = mucand->begin(); 
       // for(pat::MuonCollection::const_iterator imu = mucand->begin(); 
       imu != mucand->end() && (unsigned) muonData->nMuons < maxMuon_; imu++) {
@@ -595,6 +606,8 @@ L1MuonRecoTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup&
         muonData->hlt_mu.push_back(hasTriggered);
         muonData->hlt_isoDeltaR.push_back(isoMatchDeltaR);
         muonData->hlt_deltaR.push_back(matchDeltaR);
+    } else {
+      empty_hlt();
     } // end if (triggerMatching_)
 
     if (isGL || isTR || isSA || isTRSA){
@@ -827,65 +840,74 @@ L1MuonRecoTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup&
 	  muonData->imp_point_pt.push_back(-999999);
 	}
 
-	// Extrapolation to HB
-	TrajectoryStateOnSurface tsos;
-	tsos = cylExtrapTrkSam(glb_mu, 235);
-	if (tsos.isValid()) {
-	  double xx = tsos.globalPosition().x();
-	  double yy = tsos.globalPosition().y();
-	  double zz = tsos.globalPosition().z();
-	  muonData->z_hb.push_back(zz);	
-	  double rr = sqrt(xx*xx + yy*yy);
-	  double cosphi = xx/rr;
-	  if (yy>=0) 
-	    muonData->phi_hb.push_back(acos(cosphi));
-	  else
-	    muonData->phi_hb.push_back(2*pig-acos(cosphi));	
+	if (!runOnPostLS1_)  {
+	  //Extrapolation to HB
+	  TrajectoryStateOnSurface tsos;
+	  tsos = cylExtrapTrkSam(glb_mu, 235);
+	  if (tsos.isValid()) {
+	    double xx = tsos.globalPosition().x();
+	    double yy = tsos.globalPosition().y();
+	    double zz = tsos.globalPosition().z();
+	    muonData->z_hb.push_back(zz);	
+	    double rr = sqrt(xx*xx + yy*yy);
+	    double cosphi = xx/rr;
+	    if (yy>=0) 
+	      muonData->phi_hb.push_back(acos(cosphi));
+	    else
+	      muonData->phi_hb.push_back(2*pig-acos(cosphi));	
+	  }
+	  else{
+	    muonData->phi_hb.push_back(-999999);
+	    muonData->z_hb.push_back(-999999);
+	  }
+	  
+	  //Extrapolation to HE+
+	  tsos = surfExtrapTrkSam(glb_mu, 479);
+	  if (tsos.isValid()) {
+	    double xx = tsos.globalPosition().x();
+	    double yy = tsos.globalPosition().y();
+	    double rr = sqrt(xx*xx + yy*yy);
+	    muonData->r_he_p.push_back(rr);
+	    double cosphi = xx/rr;
+	    if (yy>=0) 
+	      muonData->phi_he_p.push_back(acos(cosphi));
+	    else
+	      muonData->phi_he_p.push_back(2*pig-acos(cosphi));	
+	  }
+	  else{
+	    muonData->r_he_p.push_back(-999999);
+	    muonData->phi_he_p.push_back(-999999);
+	  }
+	
+	  //Extrapolation to HE-
+	  tsos = surfExtrapTrkSam(glb_mu, -479);
+	  if (tsos.isValid()) {
+	    double xx = tsos.globalPosition().x();
+	    double yy = tsos.globalPosition().y();
+	    double rr = sqrt(xx*xx + yy*yy);
+	    muonData->r_he_n.push_back(rr);
+	    double cosphi = xx/rr;
+	    if (yy>=0) 
+	      muonData->phi_he_n.push_back(acos(cosphi));
+	    else
+	      muonData->phi_he_n.push_back(2*pig-acos(cosphi));	
+	  }
+	  else{
+	    muonData->r_he_n.push_back(-999999);
+	    muonData->phi_he_n.push_back(-999999);
+	  }
 	}
-	else{
+	else {
 	  muonData->phi_hb.push_back(-999999);
 	  muonData->z_hb.push_back(-999999);
-	}
-
-	// Extrapolation to HE+
-	tsos = surfExtrapTrkSam(glb_mu, 479);
-	if (tsos.isValid()) {
-	  double xx = tsos.globalPosition().x();
-	  double yy = tsos.globalPosition().y();
-	  double rr = sqrt(xx*xx + yy*yy);
-	  muonData->r_he_p.push_back(rr);
-	  double cosphi = xx/rr;
-	  if (yy>=0) 
-	    muonData->phi_he_p.push_back(acos(cosphi));
-	  else
-	    muonData->phi_he_p.push_back(2*pig-acos(cosphi));	
-	}
-	else{
 	  muonData->r_he_p.push_back(-999999);
 	  muonData->phi_he_p.push_back(-999999);
-	}
-
-	// Extrapolation to HE-
-	tsos = surfExtrapTrkSam(glb_mu, -479);
-	if (tsos.isValid()) {
-	  double xx = tsos.globalPosition().x();
-	  double yy = tsos.globalPosition().y();
-	  double rr = sqrt(xx*xx + yy*yy);
-	  muonData->r_he_n.push_back(rr);
-	  double cosphi = xx/rr;
-	  if (yy>=0) 
-	    muonData->phi_he_n.push_back(acos(cosphi));
-	  else
-	    muonData->phi_he_n.push_back(2*pig-acos(cosphi));	
-	}
-	else{
 	  muonData->r_he_n.push_back(-999999);
 	  muonData->phi_he_n.push_back(-999999);
 	}
-
       } // end of IF IS GLOBAL
 
-	// If global muon or tracker muon, fill the tracker track quantities
+      // If global muon or tracker muon, fill the tracker track quantities
       if (isTR || isGL || isTRSA){
 
 	// Take the tracker track and build a transient track out of it
@@ -906,7 +928,6 @@ L1MuonRecoTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup&
         iEvent.getByLabel("offlineBeamSpot", beamSpot);
 	muonData->tr_d0.push_back(tr_mu->dxy(beamSpot->position()));
        	
-	
 	// Extrapolation to the IP
 	if (ttrack.impactPointTSCP().isValid()){
 	  muonData->tr_imp_point_x.push_back(ttrack.impactPointTSCP().position().x());
@@ -923,115 +944,129 @@ L1MuonRecoTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup&
 	  muonData->tr_imp_point_pt.push_back(-999999);
 	}
 
-	TrajectoryStateOnSurface tsos;
-	tsos = cylExtrapTrkSam(tr_mu, 410);  // track at MB1 radius - extrapolation
-	if (tsos.isValid()) {
-	  double xx = tsos.globalPosition().x();
-	  double yy = tsos.globalPosition().y();
-	  double zz = tsos.globalPosition().z();
-	  muonData->tr_z_mb1.push_back(zz);	
-	  double rr = sqrt(xx*xx + yy*yy);
-	  double cosphi = xx/rr;
-	  if (yy>=0) 
-	    muonData->tr_phi_mb1.push_back(acos(cosphi));
-	  else
-	    muonData->tr_phi_mb1.push_back(2*pig-acos(cosphi));
+	if(!runOnPostLS1_) {
+
+	  TrajectoryStateOnSurface tsos;
+	  tsos = cylExtrapTrkSam(tr_mu, 410);  // track at MB1 radius - extrapolation
+	  if (tsos.isValid()) {
+	    double xx = tsos.globalPosition().x();
+	    double yy = tsos.globalPosition().y();
+	    double zz = tsos.globalPosition().z();
+	    muonData->tr_z_mb1.push_back(zz);	
+	    double rr = sqrt(xx*xx + yy*yy);
+	    double cosphi = xx/rr;
+	    if (yy>=0) 
+	      muonData->tr_phi_mb1.push_back(acos(cosphi));
+	    else
+	      muonData->tr_phi_mb1.push_back(2*pig-acos(cosphi));
+	  }
+	  else{
+	    muonData->tr_z_mb1.push_back(-999999);
+	    muonData->tr_phi_mb1.push_back(-999999);
+	  }
+	  
+	  tsos = cylExtrapTrkSam(tr_mu, 500);  // track at MB2 radius - extrapolation
+	  if (tsos.isValid()) {
+	    double xx = tsos.globalPosition().x();
+	    double yy = tsos.globalPosition().y();
+	    double zz = tsos.globalPosition().z();
+	    muonData->tr_z_mb2.push_back(zz);	
+	    double rr = sqrt(xx*xx + yy*yy);
+	    double cosphi = xx/rr;
+	    if (yy>=0) 
+	      muonData->tr_phi_mb2.push_back(acos(cosphi));
+	    else
+	      muonData->tr_phi_mb2.push_back(2*pig-acos(cosphi));
+	  }
+	  else{
+	    muonData->tr_z_mb2.push_back(-999999);
+	    muonData->tr_phi_mb2.push_back(-999999);
+	  }
+	  
+	  tsos = surfExtrapTrkSam(tr_mu, 630);   // track at ME1+ plane - extrapolation
+	  if (tsos.isValid()) {
+	    double xx = tsos.globalPosition().x();
+	    double yy = tsos.globalPosition().y();
+	    double rr = sqrt(xx*xx + yy*yy);
+	    muonData->tr_r_me1_p.push_back(rr);
+	    double cosphi = xx/rr;
+	    if (yy>=0) 
+	      muonData->tr_phi_me1_p.push_back(acos(cosphi));
+	    else
+	      muonData->tr_phi_me1_p.push_back(2*pig-acos(cosphi));	
+	  }
+	  else{
+	    muonData->tr_r_me1_p.push_back(-999999);
+	    muonData->tr_phi_me1_p.push_back(-999999);
+	  }
+	  
+	  tsos = surfExtrapTrkSam(tr_mu, 790);   // track at ME2+ plane - extrapolation
+	  if (tsos.isValid()) {
+	    double xx = tsos.globalPosition().x();
+	    double yy = tsos.globalPosition().y();
+	    double rr = sqrt(xx*xx + yy*yy);
+	    muonData->tr_r_me2_p.push_back(rr);
+	    double cosphi = xx/rr;
+	    if (yy>=0) 
+	      muonData->tr_phi_me2_p.push_back(acos(cosphi));
+	    else
+	      muonData->tr_phi_me2_p.push_back(2*pig-acos(cosphi));	
+	  }
+	  else{
+	    muonData->tr_r_me2_p.push_back(-999999);
+	    muonData->tr_phi_me2_p.push_back(-999999);
+	  }
+	  
+	  tsos = surfExtrapTrkSam(tr_mu, -630);   // track at ME1- plane - extrapolation
+	  if (tsos.isValid()) {
+	    double xx = tsos.globalPosition().x();
+	    double yy = tsos.globalPosition().y();
+	    double rr = sqrt(xx*xx + yy*yy);
+	    muonData->tr_r_me1_n.push_back(rr);
+	    double cosphi = xx/rr;
+	    if (yy>=0) 
+	      muonData->tr_phi_me1_n.push_back(acos(cosphi));
+	    else
+	      muonData->tr_phi_me1_n.push_back(2*pig-acos(cosphi));	
+	  }
+	  else{
+	    muonData->tr_r_me1_n.push_back(-999999);
+	    muonData->tr_phi_me1_n.push_back(-999999);
+	  }
+	  
+	  tsos = surfExtrapTrkSam(tr_mu, -790);   // track at ME2- plane - extrapolation
+	  if (tsos.isValid()) {
+	    double xx = tsos.globalPosition().x();
+	    double yy = tsos.globalPosition().y();
+	    double rr = sqrt(xx*xx + yy*yy);
+	    muonData->tr_r_me2_n.push_back(rr);
+	    double cosphi = xx/rr;
+	    if (yy>=0) 
+	      muonData->tr_phi_me2_n.push_back(acos(cosphi));
+	    else
+	      muonData->tr_phi_me2_n.push_back(2*pig-acos(cosphi));	
+	  }
+	  else{
+	    muonData->tr_r_me2_n.push_back(-999999);
+	    muonData->tr_phi_me2_n.push_back(-999999);
+	  }
 	}
-	else{
+	else {
 	  muonData->tr_z_mb1.push_back(-999999);
 	  muonData->tr_phi_mb1.push_back(-999999);
-	}
-
-	tsos = cylExtrapTrkSam(tr_mu, 500);  // track at MB2 radius - extrapolation
-	if (tsos.isValid()) {
-	  double xx = tsos.globalPosition().x();
-	  double yy = tsos.globalPosition().y();
-	  double zz = tsos.globalPosition().z();
-	  muonData->tr_z_mb2.push_back(zz);	
-	  double rr = sqrt(xx*xx + yy*yy);
-	  double cosphi = xx/rr;
-	  if (yy>=0) 
-	    muonData->tr_phi_mb2.push_back(acos(cosphi));
-	  else
-	    muonData->tr_phi_mb2.push_back(2*pig-acos(cosphi));
-	}
-	else{
 	  muonData->tr_z_mb2.push_back(-999999);
 	  muonData->tr_phi_mb2.push_back(-999999);
-	}
-	
-	tsos = surfExtrapTrkSam(tr_mu, 630);   // track at ME1+ plane - extrapolation
-	if (tsos.isValid()) {
-	  double xx = tsos.globalPosition().x();
-	  double yy = tsos.globalPosition().y();
-	  double rr = sqrt(xx*xx + yy*yy);
-	  muonData->tr_r_me1_p.push_back(rr);
-	  double cosphi = xx/rr;
-	  if (yy>=0) 
-	    muonData->tr_phi_me1_p.push_back(acos(cosphi));
-	  else
-	    muonData->tr_phi_me1_p.push_back(2*pig-acos(cosphi));	
-	}
-	else{
 	  muonData->tr_r_me1_p.push_back(-999999);
-	  muonData->tr_phi_me1_p.push_back(-999999);
-	}
-
-	tsos = surfExtrapTrkSam(tr_mu, 790);   // track at ME2+ plane - extrapolation
-	if (tsos.isValid()) {
-	  double xx = tsos.globalPosition().x();
-	  double yy = tsos.globalPosition().y();
-	  double rr = sqrt(xx*xx + yy*yy);
-	  muonData->tr_r_me2_p.push_back(rr);
-	  double cosphi = xx/rr;
-	  if (yy>=0) 
-	    muonData->tr_phi_me2_p.push_back(acos(cosphi));
-	  else
-	    muonData->tr_phi_me2_p.push_back(2*pig-acos(cosphi));	
-	}
-	else{
+	  muonData->tr_phi_me1_p.push_back(-999999);	
 	  muonData->tr_r_me2_p.push_back(-999999);
 	  muonData->tr_phi_me2_p.push_back(-999999);
-	}
-
-	tsos = surfExtrapTrkSam(tr_mu, -630);   // track at ME1- plane - extrapolation
-	if (tsos.isValid()) {
-	  double xx = tsos.globalPosition().x();
-	  double yy = tsos.globalPosition().y();
-	  double rr = sqrt(xx*xx + yy*yy);
-	  muonData->tr_r_me1_n.push_back(rr);
-	  double cosphi = xx/rr;
-	  if (yy>=0) 
-	    muonData->tr_phi_me1_n.push_back(acos(cosphi));
-	  else
-	    muonData->tr_phi_me1_n.push_back(2*pig-acos(cosphi));	
-	}
-	else{
 	  muonData->tr_r_me1_n.push_back(-999999);
 	  muonData->tr_phi_me1_n.push_back(-999999);
-	}
-
-	tsos = surfExtrapTrkSam(tr_mu, -790);   // track at ME2- plane - extrapolation
-	if (tsos.isValid()) {
-	  double xx = tsos.globalPosition().x();
-	  double yy = tsos.globalPosition().y();
-	  double rr = sqrt(xx*xx + yy*yy);
-	  muonData->tr_r_me2_n.push_back(rr);
-	  double cosphi = xx/rr;
-	  if (yy>=0) 
-	    muonData->tr_phi_me2_n.push_back(acos(cosphi));
-	  else
-	    muonData->tr_phi_me2_n.push_back(2*pig-acos(cosphi));	
-	}
-	else{
 	  muonData->tr_r_me2_n.push_back(-999999);
 	  muonData->tr_phi_me2_n.push_back(-999999);
 	}
-
-
+	
       } // end of IF IS TRACKER
-
-
 
 	// If global muon or sa muon, fill the sa track quantities
       if (isGL || isSA || isTRSA){
