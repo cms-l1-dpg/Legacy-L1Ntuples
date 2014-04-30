@@ -17,11 +17,21 @@ l1NtupleProducer = cms.EDAnalyzer("L1NtupleProducer",
     gctTauJetsSource     = cms.InputTag("none",""),
     rctSource            = cms.InputTag("none"),
     dttfSource           = cms.InputTag("none"),
+    ecalSource           = cms.InputTag("none"),
+    hcalSource           = cms.InputTag("none"),
     csctfTrkSource       = cms.InputTag("none"),
     csctfLCTSource       = cms.InputTag("none"),
     csctfStatusSource    = cms.InputTag("none"),
-    csctfDTStubsSource   = cms.InputTag("none"),	
-
+    csctfDTStubsSource   = cms.InputTag("none"),
+    # if initCSCTFPtLutsPSet is True, then the CSCTF ptLUTs
+    # get initialized from the PSet, csctfPtLutsPSet
+    # useful for experts to overwrite the csctf pt LUTs
+    initCSCTFPtLutsPSet  = cms.bool(False),
+    csctfPtLutsPSet      = cms.PSet(LowQualityFlag = cms.untracked.uint32(4),
+                                    ReadPtLUT = cms.bool(False),
+                                    isBinary  = cms.bool(False),
+                                    PtMethod = cms.untracked.uint32(32)
+                                    ),
     maxRPC      	 = cms.uint32(12),
     maxDTBX     	 = cms.uint32(12),
     maxCSC      	 = cms.uint32(12),
