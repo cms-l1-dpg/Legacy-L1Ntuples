@@ -1,60 +1,13 @@
 import FWCore.ParameterSet.Config as cms
 
-l1NtupleProducer = cms.EDAnalyzer("L1NtupleProducer",
-    verbose              = cms.untracked.bool(False),
-    physVal              = cms.bool(True),
+import L1TriggerDPG.L1Ntuples.l1NtupleProducer_cfi
+l1NtupleProducer = L1TriggerDPG.L1Ntuples.l1NtupleProducer_cfi.l1NtupleProducer.clone()
 
-    generatorSource      = cms.InputTag("none"),
-    simulationSource     = cms.InputTag("none"),
-    hltSource            = cms.InputTag("none"),
-    gmtSource            = cms.InputTag("none"),
-    gtEvmSource          = cms.InputTag("none"),
-    gtSource             = cms.InputTag("simGtDigis"),
-    gctCentralJetsSource = cms.InputTag("Layer2gctFormat","cenJets"),
-    gctNonIsoEmSource    = cms.InputTag("Layer2gctFormat","nonIsoEm"),
-    gctForwardJetsSource = cms.InputTag("Layer2gctFormat","forJets"),
-    gctIsoEmSource       = cms.InputTag("Layer2gctFormat","isoEm"),
-    gctEnergySumsSource  = cms.InputTag("Layer2gctFormat",""),
-    gctTauJetsSource     = cms.InputTag("Layer2gctFormat","tauJets"),
-    rctSource            = cms.InputTag("Layer2gctFormat"),
-    dttfSource           = cms.InputTag("none"),
-    ecalSource           = cms.InputTag("none"),
-    hcalSource           = cms.InputTag("none"),
-    csctfTrkSource       = cms.InputTag("none"),
-    csctfLCTSource       = cms.InputTag("none"),
-    csctfStatusSource    = cms.InputTag("none"),
-    csctfDTStubsSource   = cms.InputTag("none"),
-    # if initCSCTFPtLutsPSet is True, then the CSCTF ptLUTs
-    # get initialized from the PSet, csctfPtLutsPSet
-    # useful for experts to overwrite the csctf pt LUTs
-    initCSCTFPtLutsPSet  = cms.bool(False),
-    csctfPtLutsPSet      = cms.PSet(LowQualityFlag = cms.untracked.uint32(4),
-                                    ReadPtLUT = cms.bool(False),
-                                    isBinary  = cms.bool(False),
-                                    PtMethod = cms.untracked.uint32(32)
-                                    ),
-
-    maxRPC               = cms.uint32(12),
-    maxDTBX              = cms.uint32(12),
-    maxCSC               = cms.uint32(12),
-    maxGMT               = cms.uint32(12),
-    maxGT                = cms.uint32(12),
-    maxRCTREG            = cms.uint32(400),
-    maxDTPH              = cms.uint32(50),
-    maxDTTH              = cms.uint32(50),
-    maxDTTR              = cms.uint32(50),
-    maxGEN               = cms.uint32(20),
-    maxCSCTFTR           = cms.uint32(50),
-    maxCSCTFLCTSTR       = cms.uint32(4),
-    maxCSCTFLCTS         = cms.uint32(360),
-    maxCSCTFSPS          = cms.uint32(12),
-
-    puMCFile             = cms.untracked.string(""),
-    puDataFile           = cms.untracked.string(""),
-    puMCHist             = cms.untracked.string(""),
-    puDataHist           = cms.untracked.string(""),
-
-    useAvgVtx            = cms.untracked.bool(True),
-    maxAllowedWeight     = cms.untracked.double(-1)                         
-)
+l1NtupleProducer.gctCentralJetsSource = cms.InputTag("Layer2gctFormat","cenJets")
+l1NtupleProducer.gctNonIsoEmSource    = cms.InputTag("Layer2gctFormat","nonIsoEm")
+l1NtupleProducer.gctForwardJetsSource = cms.InputTag("Layer2gctFormat","forJets")
+l1NtupleProducer.gctIsoEmSource       = cms.InputTag("Layer2gctFormat","isoEm")
+l1NtupleProducer.gctEnergySumsSource  = cms.InputTag("Layer2gctFormat","")
+l1NtupleProducer.gctTauJetsSource     = cms.InputTag("Layer2gctFormat","tauJets")
+l1NtupleProducer.rctSource            = cms.InputTag("Layer2gctFormat")
 
