@@ -481,15 +481,15 @@ void L1NtupleProducer::analyzeCSCTF(const edm::Event& e, const edm::EventSetup& 
        } 
 
      // otherwise use the O2O mechanism
-     // else if (es.get< L1MuCSCPtLutRcd > ().cacheIdentifier() != m_csctfptlutCacheID )
-     //   {
-     //     edm::LogInfo("L1NtupleProducer") << "  Initializing the CSCTF ptLUTs via O2O mechanism...";
-     //     // initializing the ptLUT from O2O
-     //     csctfPtLUTs_ = new CSCTFPtLUT(es);
-         
-     //     m_csctfptlutCacheID = es.get< L1MuCSCPtLutRcd > ().cacheIdentifier();
-     //     edm::LogInfo("L1NtupleProducer") << "  Changed the cache ID for CSCTF ptLUTs...";
-     //   }
+     else if (es.get< L1MuCSCPtLutRcd > ().cacheIdentifier() != m_csctfptlutCacheID )
+       {
+         edm::LogInfo("L1NtupleProducer") << "  Initializing the CSCTF ptLUTs via O2O mechanism...";
+         // initializing the ptLUT from O2O
+         csctfPtLUTs_ = new CSCTFPtLUT(es);
+      
+         m_csctfptlutCacheID = es.get< L1MuCSCPtLutRcd > ().cacheIdentifier();
+         edm::LogInfo("L1NtupleProducer") << "  Changed the cache ID for CSCTF ptLUTs...";
+       }
      
      if (csctfPtLUTs_ == NULL)
        edm::LogWarning("L1NtupleProducer")<<"  No valid CSCTFPtLUT initialized!";
