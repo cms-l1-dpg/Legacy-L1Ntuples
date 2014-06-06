@@ -53,6 +53,7 @@ class L1AlgoFactory{
 
   void ETMVal(Float_t& ETMcut );
   void HTTVal(Float_t& HTTcut );
+  void HTMVal(Float_t& HTMcut );
   void ETTVal(Float_t& ETTcut );
 
   Bool_t SingleMu(Float_t ptcut, Int_t qualmin=4);
@@ -77,6 +78,7 @@ class L1AlgoFactory{
 
   Bool_t ETM(Float_t ETMcut );
   Bool_t HTT(Float_t HTTcut );
+  Bool_t HTM(Float_t HTMcut );
   Bool_t ETT(Float_t ETTcut );
 
   Bool_t Mu_EG(Float_t mucut, Float_t EGcut, Int_t qualmin=4);
@@ -273,6 +275,13 @@ Bool_t L1AlgoFactory::HTT(Float_t HTTcut) {
   Float_t tmp_cut = -10.;
   HTTVal(tmp_cut);
   if(tmp_cut >= HTTcut) return true;
+  return false;
+}
+
+Bool_t L1AlgoFactory::HTM(Float_t HTMcut) {
+  Float_t tmp_cut = -10.;
+  HTMVal(tmp_cut);
+  if(tmp_cut >= HTMcut) return true;
   return false;
 }
 
@@ -1083,6 +1092,14 @@ void L1AlgoFactory::HTTVal(Float_t& HTTcut) {
   Float_t adc = gt_->RankHTT ;
   Float_t TheHTT = adc/2.;
   HTTcut = TheHTT;
+  return;
+}
+
+void L1AlgoFactory::HTMVal(Float_t& HTMcut) {
+
+  Float_t adc = gt_->RankHTM ;
+  Float_t TheHTM = adc/2.;
+  HTMcut = TheHTM;
   return;
 }
 
