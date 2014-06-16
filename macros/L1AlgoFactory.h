@@ -15,6 +15,8 @@ class L1AlgoFactory{
   L1AlgoFactory(L1Analysis::L1AnalysisGTDataFormat *gt, L1Analysis::L1AnalysisGMTDataFormat *gmt);
 
   void setL1JetCorrection(Bool_t isL1JetCorr) {theL1JetCorrection = isL1JetCorr;}
+  void setHF(Bool_t isHF) {noHF = isHF;}
+  void setTau(Bool_t isTauInJet) {NOTauInJets = isTauInJet;}
 
   void SingleMuPt(Float_t& ptcut, Int_t qualmin=4);
   void SingleMuEta2p1Pt(Float_t& ptcut);
@@ -25,7 +27,7 @@ class L1AlgoFactory{
 
   void SingleEGPt(Float_t& ptcut, Bool_t isIsolated = false);
   void SingleEGEta2p1Pt(Float_t& ptcut, Bool_t isIsolated = false);
-  void DoubleEGPt(Float_t& ele1pt, Float_t& ele2pt, Bool_t isIsolated = false);
+  void DoubleEGPt(Float_t& ele1pt, Float_t& ele2pt, Bool_t isIsolated = false, Bool_t isER = false);
   void DoubleIsoEGEGPt(Float_t &myIsoEGPt, Float_t &myEGPt);
   void TripleEGPt(Float_t& ele1pt, Float_t& ele2pt, Float_t& ele3pt);
 
@@ -104,6 +106,9 @@ class L1AlgoFactory{
  private:
   Bool_t theL1JetCorrection;
 
+  Bool_t noHF;
+  Bool_t NOTauInJets;
+
   L1Analysis::L1AnalysisGMTDataFormat *gmt_;
   L1Analysis::L1AnalysisGTDataFormat  *gt_;
 
@@ -112,7 +117,7 @@ class L1AlgoFactory{
 const size_t PHIBINS = 18;
 const Double_t PHIBIN[] = {10,30,50,70,90,110,130,150,170,190,210,230,250,270,290,310,330,350};
 const size_t ETABINS = 23;
-const Double_t ETABIN[] = {-5.,-4.5,-4.,-3.5,-3.,-2.172,-1.74,-1.392,-1.044,-0.696,-0.348,0,0.348,0.696,1.044,1.392,1.74,2.172,3.,3.5,4.,4.5,5.};
+const Double_t ETABIN[] = {-5.,-4.5,-4.,-3.5,-3.,-2.172,-1.74,-1.392,-1.044,-0.696,-0.348,0.,0.348,0.696,1.044,1.392,1.74,2.172,3.,3.5,4.,4.5,5.};
 
 const size_t ETAMUBINS = 65;
 const Double_t ETAMU[] = { -2.45,-2.4,-2.35,-2.3,-2.25,-2.2,-2.15,-2.1,-2.05,-2,-1.95,-1.9,-1.85,-1.8,-1.75,-1.7,-1.6,-1.5,-1.4,-1.3,-1.2,-1.1,-1,-0.9,-0.8,-0.7,-0.6,-0.5,-0.4,-0.3,-0.2,-0.1,0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.75,1.8,1.85,1.9,1.95,2,2.05,2.1,2.15,2.2,2.25,2.3,2.35,2.4,2.45 };
@@ -125,6 +130,8 @@ L1AlgoFactory::L1AlgoFactory(L1Analysis::L1AnalysisGTDataFormat *gt, L1Analysis:
 {
   gt_ = gt;
   gmt_ = gmt;
+  noHF = false;
+  NOTauInJets = false;
 }
 
 Bool_t L1AlgoFactory::SingleMu(Float_t ptcut, Int_t qualmin) {
@@ -676,8 +683,7 @@ void L1AlgoFactory::SingleEGPt(Float_t& cut, Bool_t isIsolated ) {
     if(bx != 0) continue;
     if(isIsolated && !gt_ -> Isoel[ue]) continue;
 
-    Float_t rank = gt_ -> Rankel[ue];    // the rank of the electron
-    Float_t pt = rank ; 
+    Float_t pt = gt_ -> Rankel[ue];    // the rank of the electron
     if(pt >= ptmax) ptmax = pt;
   }
 
@@ -698,8 +704,7 @@ void L1AlgoFactory::SingleEGEta2p1Pt(Float_t& cut, Bool_t isIsolated ) {
     Float_t eta = gt_ -> Etael[ue];
     if(eta < 4.5 || eta > 16.5) continue;  // eta = 5 - 16
 
-    Float_t rank = gt_ -> Rankel[ue];    // the rank of the electron
-    Float_t pt = rank ; 
+    Float_t pt = gt_ -> Rankel[ue];    // the rank of the electron
     if(pt >= ptmax) ptmax = pt;
   }
 
@@ -708,26 +713,45 @@ void L1AlgoFactory::SingleEGEta2p1Pt(Float_t& cut, Bool_t isIsolated ) {
   return;
 }
 
-void L1AlgoFactory::DoubleEGPt(Float_t& cut1, Float_t& cut2, Bool_t isIsolated ) {
+void L1AlgoFactory::DoubleEGPt(Float_t& cut1, Float_t& cut2, Bool_t isIsolated, Bool_t isER ) {
 
   Float_t ele1ptmax = -10.;
   Float_t ele2ptmax = -10.;
+
+  Float_t ele1Phimax = -1000.;
+  Float_t ele1Etamax = -1000.;
+
+  Bool_t EG1_ER = false;
+  Bool_t EG2_ER = false;
 
   Int_t Nele = gt_ -> Nele;
   for(Int_t ue=0; ue < Nele; ue++) {               
     Int_t bx = gt_ -> Bxel[ue];        		
     if(bx != 0) continue;
     if(isIsolated && !gt_ -> Isoel[ue]) continue;
-    Float_t rank = gt_ -> Rankel[ue];    // the rank of the electron
-    Float_t pt = rank ;
+    Float_t pt = gt_ -> Rankel[ue];    // the rank of the electron
+    Float_t phi = gt_ -> Phiel[ue];    // the rank of the electron
+    Float_t eta = gt_ -> Etael[ue];    // the rank of the electron
+
+    if(fabs(pt-ele1ptmax) < 0.001 && fabs(phi-ele1Phimax) < 0.001 && fabs(eta-ele1Etamax) < 0.001) continue; //to avoid double counting in noniso/relaxiso lists
 
     if(pt >= ele1ptmax)
       {
 	ele2ptmax = ele1ptmax;
 	ele1ptmax = pt;
+	ele1Phimax = phi;
+	ele1Etamax = eta;
+	if(eta > 4.5 && eta < 16.5) EG1_ER = true;
+	else EG1_ER = false;
       }
-    else if(pt >= ele2ptmax) ele2ptmax = pt;
+    else if(pt >= ele2ptmax){
+      ele2ptmax = pt;
+      if(eta > 4.5 && eta < 16.5) EG2_ER = true;
+      else EG2_ER = false;
+    }
   }
+
+  if(isER && (!EG1_ER || !EG2_ER)) return;
 
   if(ele2ptmax >= 0.){
     cut1 = ele1ptmax;
@@ -778,22 +802,37 @@ void L1AlgoFactory::TripleEGPt(Float_t& cut1, Float_t& cut2, Float_t& cut3 ) {
   Float_t ele2ptmax = -10.;
   Float_t ele3ptmax = -10.;
 
+  Float_t ele1Phimax = -1000.;
+  Float_t ele1Etamax = -1000.;
+
+  Float_t ele2Phimax = -1000.;
+  Float_t ele2Etamax = -1000.;
+
+
   Int_t Nele = gt_ -> Nele;
   for (Int_t ue=0; ue < Nele; ue++) {
     Int_t bx = gt_ -> Bxel[ue];        		
     if (bx != 0) continue;
-    Float_t rank = gt_ -> Rankel[ue];    // the rank of the electron
-    Float_t pt = rank ;
+    Float_t pt = gt_ -> Rankel[ue];    // the rank of the electron
+    Float_t phi = gt_ -> Phiel[ue];    // the rank of the electron
+    Float_t eta = gt_ -> Etael[ue];    // the rank of the electron
+
+    if(fabs(pt-ele1ptmax) < 0.001 && fabs(phi-ele1Phimax) < 0.001 && fabs(eta-ele1Etamax) < 0.001) continue; //to avoid double counting in noniso/relaxiso lists
+    if(fabs(pt-ele2ptmax) < 0.001 && fabs(phi-ele2Phimax) < 0.001 && fabs(eta-ele2Etamax) < 0.001) continue; //to avoid double counting in noniso/relaxiso lists
 
     if(pt >= ele1ptmax)
       {
 	ele3ptmax = ele2ptmax;
 	ele2ptmax = ele1ptmax;
 	ele1ptmax = pt;
+ 	ele1Phimax = phi;
+	ele1Etamax = eta;
       }
     else if(pt >= ele2ptmax){
       ele3ptmax = ele2ptmax;
       ele2ptmax = pt;
+      ele2Phimax = phi;
+      ele2Etamax = eta;
     }
     else if(pt >= ele3ptmax) ele3ptmax = pt;
   }
@@ -816,6 +855,8 @@ void L1AlgoFactory::SingleJetPt(Float_t& cut, Bool_t isCentral) {
     if(bx != 0) continue;
     Bool_t isFwdJet = gt_ -> Fwdjet[ue];
     if(isCentral && isFwdJet) continue;
+    if(NOTauInJets && gt_->Taujet[ue]) continue;
+    if(isCentral && noHF && (gt_->Etajet[ue] < 5 || gt_->Etajet[ue] > 17)) continue;
 
     Float_t rank = gt_ -> Rankjet[ue];
     Float_t pt = CorrectedL1JetPtByGCTregions(gt_->Etajet[ue],rank*4.);
@@ -837,6 +878,9 @@ void L1AlgoFactory::DoubleJetPt(Float_t& cut1, Float_t& cut2, Bool_t isCentral )
     if(bx != 0) continue;
     Bool_t isFwdJet = gt_ -> Fwdjet[ue];
     if(isCentral && isFwdJet) continue;
+    if(NOTauInJets && gt_->Taujet[ue]) continue;
+    if(isCentral && noHF && (gt_->Etajet[ue] < 5 || gt_->Etajet[ue] > 17)) continue;
+
     Float_t rank = gt_ -> Rankjet[ue];
     Float_t pt = CorrectedL1JetPtByGCTregions(gt_->Etajet[ue],rank*4.);
 
@@ -869,10 +913,13 @@ void L1AlgoFactory::DoubleJet_Eta1p7_deltaEta4Pt(Float_t& cut1, Float_t& cut2 ) 
     if (bx != 0) continue;
     Bool_t isFwdJet = gt_ -> Fwdjet[ue];
     if (isFwdJet) continue;
+    if(NOTauInJets && gt_->Taujet[ue]) continue;
+    if(noHF && (gt_->Etajet[ue] < 5 || gt_->Etajet[ue] > 17)) continue;
+
     Float_t rank = gt_ -> Rankjet[ue];
     Float_t pt = CorrectedL1JetPtByGCTregions(gt_->Etajet[ue],rank*4.);
     Float_t eta1 = gt_ -> Etajet[ue];
-    if (eta1 < 5.5 || eta1 > 15.5) continue;  // eta = 6 - 15
+    if (eta1 < 5.5 || eta1 > 16.5) continue;  // eta = 6 - 16
 
     for(Int_t ve=0; ve < Nj; ve++) {
       if(ve == ue) continue;
@@ -880,10 +927,13 @@ void L1AlgoFactory::DoubleJet_Eta1p7_deltaEta4Pt(Float_t& cut1, Float_t& cut2 ) 
       if(bx2 != 0) continue;
       Bool_t isFwdJet2 = gt_ -> Fwdjet[ve];
       if(isFwdJet2) continue;
+      if(NOTauInJets && gt_->Taujet[ve]) continue;
+      if(noHF && (gt_->Etajet[ve] < 5 || gt_->Etajet[ve] > 17)) continue;
+
       Float_t rank2 = gt_ -> Rankjet[ve];
       Float_t pt2 = rank2 * 4;
       Float_t eta2 = gt_ -> Etajet[ve];
-      if(eta2 < 5.5 || eta2 > 15.5) continue;  // eta = 6 - 15
+      if(eta2 < 5.5 || eta2 > 16.5) continue;  // eta = 6 - 16
 
       if(correlateInEta((int)eta1, (int)eta2, 4)){
 	corr = true;
@@ -958,6 +1008,8 @@ void L1AlgoFactory::TripleJetCentralPt(Float_t& cut1, Float_t& cut2, Float_t& cu
     if(bx != 0) continue;
     Bool_t isFwdJet = gt_ -> Fwdjet[ue];
     if(isFwdJet) continue;
+    if(NOTauInJets && gt_->Taujet[ue]) continue;
+    if(noHF && (gt_->Etajet[ue] < 5 || gt_->Etajet[ue] > 17)) continue;
     Float_t rank = gt_ -> Rankjet[ue];
     Float_t pt = CorrectedL1JetPtByGCTregions(gt_->Etajet[ue],rank*4.);
 
@@ -1038,6 +1090,9 @@ void L1AlgoFactory::QuadJetPt(Float_t& cut1, Float_t& cut2, Float_t& cut3, Float
     if(bx != 0) continue;
     Bool_t isFwdJet = gt_ -> Fwdjet[ue];
     if(isCentral && isFwdJet) continue;
+    if(NOTauInJets && gt_->Taujet[ue]) continue;
+    if(isCentral && noHF && (gt_->Etajet[ue] < 5 || gt_->Etajet[ue] > 17)) continue;
+
     Float_t rank = gt_ -> Rankjet[ue];
     Float_t pt = CorrectedL1JetPtByGCTregions(gt_->Etajet[ue],rank*4.);
 
@@ -1114,8 +1169,7 @@ void L1AlgoFactory::Mu_EGPt(Float_t& mucut, Float_t& EGcut, Int_t qualmin) {
   for(Int_t ue=0; ue < Nele; ue++) {
     Int_t bx = gt_ -> Bxel[ue];        		
     if(bx != 0) continue;
-    Float_t rank = gt_ -> Rankel[ue];    // the rank of the electron
-    Float_t pt = rank ;
+    Float_t pt = gt_ -> Rankel[ue];    // the rank of the electron
     if(pt >= eleptmax) eleptmax = pt;
   }
 
@@ -1152,8 +1206,7 @@ void L1AlgoFactory::DoubleMu_EGPt(Float_t& mucut, Float_t& EGcut ) {
   for (Int_t ue=0; ue < Nele; ue++) {
     Int_t bx = gt_ -> Bxel[ue];        		
     if (bx != 0) continue;
-    Float_t rank = gt_ -> Rankel[ue];    // the rank of the electron
-    Float_t pt = rank ;
+    Float_t pt = gt_ -> Rankel[ue];    // the rank of the electron
     if (pt >= EGmax) EGmax = pt;
   }  // end loop over EM objects
 
@@ -1167,9 +1220,11 @@ void L1AlgoFactory::DoubleMu_EGPt(Float_t& mucut, Float_t& EGcut ) {
 
 void L1AlgoFactory::Mu_DoubleEGPt(Float_t& mucut, Float_t& EGcut ) {
 
-  Float_t muptmax = -10.;
-  Float_t eleptmax1 = -10.;
-  Float_t eleptmax2 = -10.;
+  Float_t muptmax    = -10.;
+  Float_t eleptmax1  = -10.;
+  Float_t eleptmax2  = -10.;
+  Float_t ele1Phimax = -1000.;
+  Float_t ele1Etamax = -1000.;
 
   Int_t Nmu = gmt_ -> N;
   for (Int_t imu=0; imu < Nmu; imu++) {
@@ -1185,12 +1240,17 @@ void L1AlgoFactory::Mu_DoubleEGPt(Float_t& mucut, Float_t& EGcut ) {
   for (Int_t ue=0; ue < Nele; ue++) {
     Int_t bx = gt_ -> Bxel[ue];        		
     if(bx != 0) continue;
-    Float_t rank = gt_ -> Rankel[ue];    // the rank of the electron
-    Float_t pt = rank ;
+    Float_t pt = gt_ -> Rankel[ue];    // the rank of the electron
+    Float_t phi = gt_ -> Phiel[ue];    // the rank of the electron
+    Float_t eta = gt_ -> Etael[ue];    // the rank of the electron
+
+    if(fabs(pt-eleptmax1) < 0.001 && fabs(phi-ele1Phimax) < 0.001 && fabs(eta-ele1Etamax) < 0.001) continue; //to avoid double counting in noniso/relaxiso lists
 
     if(pt >= eleptmax1){
       eleptmax2 = eleptmax1;
       eleptmax1 = pt;
+      ele1Phimax = phi;
+      ele1Etamax = eta;
     }
     else if(pt >= eleptmax2) eleptmax2 = pt;
   }
@@ -1225,6 +1285,9 @@ void L1AlgoFactory::Mu_DoubleJetCentralPt(Float_t& mucut, Float_t& jetcut) {
     if (bx != 0) continue;
     Bool_t isFwdJet = gt_ -> Fwdjet[ue];
     if (isFwdJet) continue;
+    if(NOTauInJets && gt_->Taujet[ue]) continue;
+    if(noHF && (gt_->Etajet[ue] < 5 || gt_->Etajet[ue] > 17)) continue;
+
     Float_t rank = gt_ -> Rankjet[ue];
     Float_t pt = CorrectedL1JetPtByGCTregions(gt_->Etajet[ue],rank*4.);
 
@@ -1267,6 +1330,9 @@ void L1AlgoFactory::Muer_JetCentralPt(Float_t& mucut, Float_t& jetcut) {
     if (bx != 0) continue;
     Bool_t isFwdJet = gt_ -> Fwdjet[ue];
     if (isFwdJet) continue;
+    if(NOTauInJets && gt_->Taujet[ue]) continue;
+    if(noHF && (gt_->Etajet[ue] < 5 || gt_->Etajet[ue] > 17)) continue;
+
     Float_t rank = gt_ -> Rankjet[ue];
     Float_t pt = CorrectedL1JetPtByGCTregions(gt_->Etajet[ue],rank*4.);
     if (pt >= jetptmax) jetptmax = pt;
@@ -1305,6 +1371,9 @@ void L1AlgoFactory::Mu_JetCentral_deltaPt(Float_t& mucut, Float_t& jetcut) {
       if (bxj != 0) continue;
       Bool_t isFwdJet = gt_ -> Fwdjet[ue];
       if (isFwdJet) continue;
+      if(NOTauInJets && gt_->Taujet[ue]) continue;
+      if(noHF && (gt_->Etajet[ue] < 5 || gt_->Etajet[ue] > 17)) continue;
+
       Float_t rank = gt_ -> Rankjet[ue];
       Float_t ptj = CorrectedL1JetPtByGCTregions(gt_->Etajet[ue],rank*4.);
       Float_t phijet = gt_ -> Phijet[ue];
@@ -1395,8 +1464,7 @@ void L1AlgoFactory::SingleIsoEG_Eta2p1_ETMPt(Float_t& egcut, Float_t& ETMcut) {
     if(! iso) continue;
     Float_t eta = gt_ -> Etael[ue];
     if(eta < 4.5 || eta > 16.5) continue;  // eta = 5 - 16
-    Float_t rank = gt_->Rankel[ue];
-    Float_t pt = rank ;
+    Float_t pt = gt_->Rankel[ue];
     if(pt >= eleptmax) eleptmax = pt;
   }
 
@@ -1420,8 +1488,7 @@ void L1AlgoFactory::EG_FwdJetPt(Float_t& EGcut, Float_t& FWcut) {
   for (Int_t ue=0; ue < Nele; ue++) {
     Int_t bx = gt_ -> Bxel[ue];        		
     if(bx != 0) continue;
-    Float_t rank = gt_ -> Rankel[ue];    // the rank of the electron
-    Float_t pt = rank ;
+    Float_t pt = gt_ -> Rankel[ue];    // the rank of the electron
     if(pt >= eleptmax) eleptmax = pt;
   }
 
@@ -1431,6 +1498,7 @@ void L1AlgoFactory::EG_FwdJetPt(Float_t& EGcut, Float_t& FWcut) {
     if(bx != 0) continue;
     Bool_t isFwdJet = gt_ -> Fwdjet[ue];
     if(!isFwdJet) continue;
+    if(NOTauInJets && gt_->Taujet[ue]) continue;
     Float_t rank = gt_ -> Rankjet[ue];
     Float_t pt = CorrectedL1JetPtByGCTregions(gt_->Etajet[ue],rank*4.);
     if (pt >= jetptmax) jetptmax = pt;
@@ -1454,8 +1522,7 @@ void L1AlgoFactory::EG_DoubleJetCentralPt(Float_t& EGcut, Float_t& jetcut) {
   for (Int_t ue=0; ue < Nele; ue++) {
     Int_t bx = gt_ -> Bxel[ue];        		
     if(bx != 0) continue;
-    Float_t rank = gt_ -> Rankel[ue];    // the rank of the electron
-    Float_t pt = rank ;
+    Float_t pt = gt_ -> Rankel[ue];    // the rank of the electron
     if(pt >= eleptmax) eleptmax = pt; 
   }  // end loop over EM objects
 
@@ -1465,6 +1532,9 @@ void L1AlgoFactory::EG_DoubleJetCentralPt(Float_t& EGcut, Float_t& jetcut) {
     if (bx != 0) continue;
     Bool_t isFwdJet = gt_ -> Fwdjet[ue];
     if (isFwdJet) continue;
+    if(NOTauInJets && gt_->Taujet[ue]) continue;
+    if(noHF && (gt_->Etajet[ue] < 5 || gt_->Etajet[ue] > 17)) continue;
+
     Float_t rank = gt_ -> Rankjet[ue];
     Float_t pt = CorrectedL1JetPtByGCTregions(gt_->Etajet[ue],rank*4.);
 
@@ -1485,19 +1555,26 @@ void L1AlgoFactory::EG_DoubleJetCentralPt(Float_t& EGcut, Float_t& jetcut) {
 
 void L1AlgoFactory::DoubleEG_HTPt(Float_t& EGcut, Float_t& HTcut) {
 
-  Float_t eleptmax1 = -10.;
-  Float_t eleptmax2 = -10.;
+  Float_t eleptmax1  = -10.;
+  Float_t eleptmax2  = -10.;
+  Float_t ele1Phimax = -1000.;
+  Float_t ele1Etamax = -1000.;
 
   Int_t Nele = gt_ -> Nele;
   for(Int_t ue=0; ue < Nele; ue++) {
     Int_t bx = gt_ -> Bxel[ue];        		
     if(bx != 0) continue;
-    Float_t rank = gt_ -> Rankel[ue];    // the rank of the electron
-    Float_t pt = rank;
+    Float_t pt = gt_ -> Rankel[ue];    // the rank of the electron
+    Float_t phi = gt_ -> Phiel[ue];    // the rank of the electron
+    Float_t eta = gt_ -> Etael[ue];    // the rank of the electron
+
+    if(fabs(pt-eleptmax1) < 0.001 && fabs(phi-ele1Phimax) < 0.001 && fabs(eta-ele1Etamax) < 0.001) continue; //to avoid double counting in noniso/relaxiso lists
 
     if(pt >= eleptmax1){
       eleptmax2 = eleptmax1;
       eleptmax1 = pt;
+      ele1Phimax = phi;
+      ele1Etamax = eta;
     }
     else if(pt >= eleptmax2) eleptmax2 = pt;
   }
@@ -1527,6 +1604,8 @@ void L1AlgoFactory::DoubleJetCentral_ETMPt(Float_t& jetcut1, Float_t& jetcut2, F
     if(bx != 0) continue;
     Bool_t isFwdJet = gt_ -> Fwdjet[ue];
     if(isFwdJet) continue;
+    if(NOTauInJets && gt_->Taujet[ue]) continue;
+    if(noHF && (gt_->Etajet[ue] < 5 || gt_->Etajet[ue] > 17)) continue;
     Float_t rank = gt_ -> Rankjet[ue];
     Float_t pt = CorrectedL1JetPtByGCTregions(gt_->Etajet[ue],rank*4.);
 
