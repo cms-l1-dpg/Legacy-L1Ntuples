@@ -64,7 +64,7 @@
 #include "DataFormats/EcalDigi/interface/EcalDigiCollections.h"
 #include "DataFormats/HcalDigi/interface/HcalDigiCollections.h"
 
-
+#include "CondFormats/DataRecord/interface/L1MuCSCPtLutRcd.h"
 
 //----------------
 // Constructor  --

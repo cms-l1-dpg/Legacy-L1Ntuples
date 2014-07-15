@@ -23,12 +23,13 @@ class L1AlgoFactory{
   void DoubleMuPt(Float_t& mu1pt, Float_t& mu2pt, Bool_t isHighQual = false, Bool_t isER = false);
   void DoubleMuXOpenPt(Float_t& cut);
   void OniaPt(Float_t& ptcut1, Float_t& ptcut2, Int_t delta);
+  void Onia2015Pt(Float_t& ptcut1, Float_t& ptcut2, Bool_t isER, Bool_t isOS, Int_t delta);
   void TripleMuPt(Float_t& mu1pt, Float_t& mu2pt, Float_t& mu3pt, Int_t qualmin = 4);
+  void QuadMuPt(Float_t& mu1pt, Float_t& mu2pt, Float_t& mu3pt, Float_t& mu4pt, Int_t qualmin = 4);
 
   void SingleEGPt(Float_t& ptcut, Bool_t isIsolated = false);
   void SingleEGEta2p1Pt(Float_t& ptcut, Bool_t isIsolated = false);
   void DoubleEGPt(Float_t& ele1pt, Float_t& ele2pt, Bool_t isIsolated = false, Bool_t isER = false);
-  void DoubleIsoEGEGPt(Float_t &myIsoEGPt, Float_t &myEGPt);
   void TripleEGPt(Float_t& ele1pt, Float_t& ele2pt, Float_t& ele3pt);
 
   void SingleJetPt(Float_t& ptcut, Bool_t isCentral = false);
@@ -39,7 +40,7 @@ class L1AlgoFactory{
   Bool_t TripleJet_VBF(Float_t jet1, Float_t jet2, Float_t jet3 );
   void QuadJetPt(Float_t& cut1, Float_t& cut2, Float_t& cut3, Float_t& cut4, Bool_t isCentral = false);
 
-  void Mu_EGPt(Float_t& mucut, Float_t& EGcut, Int_t qualmin=4);
+  void Mu_EGPt(Float_t& mucut, Float_t& EGcut, Bool_t isIsolated = false, Int_t qualmin=4);
   void DoubleMu_EGPt(Float_t& mucut, Float_t& EGcut );
   void Mu_DoubleEGPt(Float_t& mucut, Float_t& EGcut );
   void Muer_JetCentralPt(Float_t& mucut, Float_t& jetcut);
@@ -52,6 +53,8 @@ class L1AlgoFactory{
   void EG_DoubleJetCentralPt(Float_t& EGcut, Float_t& jetcut);
   void DoubleEG_HTPt(Float_t& EGcut, Float_t& HTcut);
   void DoubleJetCentral_ETMPt(Float_t& jetcut1, Float_t& jetcut2, Float_t& ETMcut);
+  void Muer_TauJetEta2p17Pt(Float_t& mucut, Float_t& taucut);
+  void IsoEGer_TauJetEta2p17Pt(Float_t& egcut, Float_t& taucut);
 
   void ETMVal(Float_t& ETMcut );
   void HTTVal(Float_t& HTTcut );
@@ -62,12 +65,13 @@ class L1AlgoFactory{
   Bool_t DoubleMu(Float_t mu1pt, Float_t mu2pt, Bool_t isHighQual = false, Bool_t isER = false);
   Bool_t DoubleMuXOpen(Float_t mu1pt);
   Bool_t Onia(Float_t mu1pt, Float_t mu2pt, Int_t delta);
+  Bool_t Onia2015(Float_t mu1pt, Float_t mu2pt, Bool_t isER, Bool_t isOS, Int_t delta);
   Bool_t TripleMu(Float_t mu1pt, Float_t mu2pt, Float_t mu3pt, Int_t qualmin);
+  Bool_t QuadMu(Float_t mu1pt, Float_t mu2pt, Float_t mu3pt, Float_t mu4pt, Int_t qualmin);
 
   Bool_t SingleEG(Float_t ptcut, Bool_t isIsolated = false);
   Bool_t SingleEGEta2p1(Float_t ptcut, Bool_t isIsolated = false);
   Bool_t DoubleEG(Float_t ptcut1, Float_t ptcut2, Bool_t isIsolated = false);
-  Bool_t DoubleIsoEGEG(Float_t ptcut1, Float_t ptcut2);
   Bool_t TripleEG(Float_t ptcut1, Float_t ptcut2, Float_t ptcut3);
 
   Bool_t SingleJet(Float_t ptcut, Bool_t isCentral = false);
@@ -81,7 +85,7 @@ class L1AlgoFactory{
   Bool_t HTT(Float_t HTTcut );
   Bool_t ETT(Float_t ETTcut );
 
-  Bool_t Mu_EG(Float_t mucut, Float_t EGcut, Int_t qualmin=4);
+  Bool_t Mu_EG(Float_t mucut, Float_t EGcut, Bool_t isIsolated = false, Int_t qualmin=4);
   Bool_t DoubleMu_EG(Float_t mucut, Float_t EGcut );
   Bool_t Mu_DoubleEG(Float_t mucut, Float_t EGcut );
   Bool_t Muer_JetCentral(Float_t mucut, Float_t jetcut);
@@ -94,6 +98,8 @@ class L1AlgoFactory{
   Bool_t EG_DoubleJetCentral(Float_t EGcut, Float_t jetcut);
   Bool_t DoubleEG_HT(Float_t EGcut, Float_t HTcut);
   Bool_t DoubleJetCentral_ETM(Float_t jetcut1, Float_t jetcut2, Float_t ETMcut);
+  Bool_t Muer_TauJetEta2p17(Float_t mucut, Float_t taucut);
+  Bool_t IsoEGer_TauJetEta2p17(Float_t egcut, Float_t taucut);
 
   inline Bool_t correlateInPhi(Int_t jetphi, Int_t muphi, Int_t delta=1);
   inline Bool_t correlateInEta(Int_t mueta, Int_t jeteta, Int_t delta=1);
@@ -171,12 +177,30 @@ Bool_t L1AlgoFactory::Onia(Float_t mu1pt, Float_t mu2pt, Int_t delta) {
   return false;
 }
 
+Bool_t L1AlgoFactory::Onia2015(Float_t mu1pt, Float_t mu2pt, Bool_t isER, Bool_t isOS, Int_t delta) {
+  Float_t tmp_cut1 = -10.;
+  Float_t tmp_cut2 = -10.;
+  Onia2015Pt(tmp_cut1,tmp_cut2,isER,isOS,delta);
+  if(tmp_cut1 >= mu1pt && tmp_cut2 >= mu2pt) return true;
+  return false;
+}
+
 Bool_t L1AlgoFactory::TripleMu(Float_t mu1pt, Float_t mu2pt, Float_t mu3pt, Int_t qualmin) {
   Float_t tmp_cut1 = -10.;
   Float_t tmp_cut2 = -10.;
-  Float_t tmp_cut3 = -10;
+  Float_t tmp_cut3 = -10.;
   TripleMuPt(tmp_cut1,tmp_cut2,tmp_cut3,qualmin);
   if(tmp_cut1 >= mu1pt && tmp_cut2 >= mu2pt &&  tmp_cut3 >= mu3pt) return true;
+  return false;
+}
+
+Bool_t L1AlgoFactory::QuadMu(Float_t mu1pt, Float_t mu2pt, Float_t mu3pt, Float_t mu4pt, Int_t qualmin) {
+  Float_t tmp_cut1 = -10.;
+  Float_t tmp_cut2 = -10.;
+  Float_t tmp_cut3 = -10.;
+  Float_t tmp_cut4 = -10.;
+  QuadMuPt(tmp_cut1,tmp_cut2,tmp_cut3,tmp_cut4,qualmin);
+  if(tmp_cut1 >= mu1pt && tmp_cut2 >= mu2pt &&  tmp_cut3 >= mu3pt && tmp_cut4 >= mu4pt) return true;
   return false;
 }
 
@@ -198,14 +222,6 @@ Bool_t L1AlgoFactory::DoubleEG(Float_t ptcut1, Float_t ptcut2, Bool_t isIsolated
   Float_t tmp_cut1 = -10.;
   Float_t tmp_cut2 = -10.;
   DoubleEGPt(tmp_cut1,tmp_cut2,isIsolated);
-  if(tmp_cut1 >= ptcut1 && tmp_cut2 >= ptcut2) return true;
-  return false;
-}
-
-Bool_t L1AlgoFactory::DoubleIsoEGEG(Float_t ptcut1, Float_t ptcut2) {
-  Float_t tmp_cut1 = -10.;
-  Float_t tmp_cut2 = -10.;
-  DoubleIsoEGEGPt(tmp_cut1,tmp_cut2);
   if(tmp_cut1 >= ptcut1 && tmp_cut2 >= ptcut2) return true;
   return false;
 }
@@ -290,10 +306,10 @@ Bool_t L1AlgoFactory::ETT(Float_t ETTcut) {
   return false;
 }
 
-Bool_t L1AlgoFactory::Mu_EG(Float_t mucut, Float_t EGcut, Int_t qualmin) {
+Bool_t L1AlgoFactory::Mu_EG(Float_t mucut, Float_t EGcut, Bool_t isIsolated, Int_t qualmin) {
   Float_t tmp_mucut = -10.;
   Float_t tmp_elecut = -10.;
-  Mu_EGPt(tmp_mucut,tmp_elecut,qualmin);
+  Mu_EGPt(tmp_mucut,tmp_elecut,isIsolated,qualmin);
   if(tmp_mucut >= mucut && tmp_elecut >= EGcut) return true;
   return false;
 }
@@ -395,6 +411,22 @@ Bool_t L1AlgoFactory::DoubleJetCentral_ETM(Float_t jetcut1, Float_t jetcut2, Flo
   return false;
 }
 
+Bool_t L1AlgoFactory::Muer_TauJetEta2p17(Float_t mucut, Float_t taucut){
+  Float_t tmp_mucut  = -10.;
+  Float_t tmp_taucut = -10.;
+  Muer_TauJetEta2p17Pt(tmp_mucut, tmp_taucut);
+  if(tmp_mucut >= mucut && tmp_taucut >= taucut) return true;
+  return false;
+}
+
+Bool_t L1AlgoFactory::IsoEGer_TauJetEta2p17(Float_t egcut, Float_t taucut){
+  Float_t tmp_egcut  = -10.;
+  Float_t tmp_taucut = -10.;
+  IsoEGer_TauJetEta2p17Pt(tmp_egcut, tmp_taucut);
+  if(tmp_egcut >= egcut && tmp_taucut >= taucut) return true;
+  return false;
+}
+
 inline Bool_t L1AlgoFactory::correlateInPhi(Int_t jetphi, Int_t muphi, Int_t delta){
   return fabs(muphi-jetphi)<fabs(2 +delta-1) || fabs(muphi-jetphi)>fabs(PHIBINS-2 - (delta-1) );
 }
@@ -439,7 +471,7 @@ Int_t L1AlgoFactory::etaINjetCoord(Double_t eta) {
 }
 
 inline Double_t L1AlgoFactory::degree(Double_t radian) {
-  if (radian<0)
+  if (radian<0.)
     return 360.+(radian/TMath::Pi()*180.);
   else
     return radian/TMath::Pi()*180.;
@@ -523,6 +555,8 @@ void L1AlgoFactory::DoubleMuPt(Float_t& cut1, Float_t& cut2, Bool_t isHighQual, 
   Float_t mu2ptmax = -10.;
 
   Int_t Nmu = gmt_ -> N;
+  if(Nmu < 2) return;
+
   for (Int_t imu=0; imu < Nmu; imu++) {
     Int_t bx = gmt_ -> CandBx[imu];		
     if(bx != 0) continue;
@@ -575,6 +609,8 @@ void L1AlgoFactory::DoubleMuXOpenPt(Float_t& cut) {
 void L1AlgoFactory::OniaPt(Float_t& ptcut1, Float_t& ptcut2, Int_t delta) {
 
   Int_t Nmu = gmt_ -> N;
+  if(Nmu < 2) return;
+
   Float_t maxpt1 = -10.;
   Float_t maxpt2 = -10.;
   Float_t corr = false;
@@ -636,6 +672,74 @@ void L1AlgoFactory::OniaPt(Float_t& ptcut1, Float_t& ptcut2, Int_t delta) {
   return;
 }
 
+void L1AlgoFactory::Onia2015Pt(Float_t& ptcut1, Float_t& ptcut2, Bool_t isER, Bool_t isOS, Int_t delta) {
+
+  Int_t Nmu = gmt_ -> N;
+  if(Nmu < 2) return;
+
+  Float_t maxpt1 = -10.;
+  Float_t maxpt2 = -10.;
+  Float_t corr = false;
+
+  std::vector<std::pair<Float_t,Float_t> > muonPairs;
+
+  for (Int_t imu=0; imu < Nmu; imu++) {
+    Int_t bx = gmt_ -> CandBx[imu];		
+    if (bx != 0) continue;
+    Float_t pt = gmt_ -> Pt[imu];			
+    Int_t qual = gmt_ -> Qual[imu];        
+    if ( qual < 4) continue;
+    Float_t eta = gmt_  -> Eta[imu];        
+    if(isER && fabs(eta) > 1.6) continue;
+    Int_t ieta1 = etaMuIdx(eta);
+    Int_t charge1 = gmt_->Cha[imu];
+
+    for (Int_t imu2=0; imu2 < Nmu; imu2++) {
+      if (imu2 == imu) continue;
+      Int_t bx2 = gmt_ -> CandBx[imu2];		
+      if (bx2 != 0) continue;
+      Float_t pt2 = gmt_ -> Pt[imu2];			
+      Int_t qual2 = gmt_ -> Qual[imu2];        
+      if ( qual2 < 4) continue;
+      Float_t eta2 = gmt_  -> Eta[imu2];        
+      if(isER && fabs(eta2) > 1.6) continue;
+      Int_t ieta2 = etaMuIdx(eta2);
+      Int_t charge2 = gmt_->Cha[imu2];
+
+      if(isOS && charge1*charge2 > 0) continue;
+
+      Float_t deta = ieta1 - ieta2; 
+      if ( fabs(deta) <= delta){
+	corr = true;
+	muonPairs.push_back(std::pair<Float_t,Float_t>(pt,pt2));
+      }
+
+    }
+  }
+
+  if(corr){
+    std::vector<std::pair<Float_t,Float_t> >::const_iterator muonPairIt  = muonPairs.begin();
+    std::vector<std::pair<Float_t,Float_t> >::const_iterator muonPairEnd = muonPairs.end();
+    for (; muonPairIt != muonPairEnd; ++muonPairIt) {
+      Float_t pt1 = muonPairIt->first;
+      Float_t pt2 = muonPairIt->second;
+      
+      if ( pt1 > maxpt1 || (fabs(maxpt1-pt1)<10E-2 && pt2>maxpt2) ) 
+	{
+	  maxpt1 = pt1;
+	  maxpt2 = pt2;
+	}
+    }
+
+  }
+
+  if(corr && maxpt2 >= 0.){
+    ptcut1 = maxpt1;
+    ptcut2 = maxpt2;
+  }
+
+  return;
+}
 
 void L1AlgoFactory::TripleMuPt(Float_t& cut1, Float_t& cut2, Float_t& cut3, Int_t qualmin) {
 
@@ -644,6 +748,8 @@ void L1AlgoFactory::TripleMuPt(Float_t& cut1, Float_t& cut2, Float_t& cut3, Int_
   Float_t mu3ptmax = -10.;
 
   Int_t Nmu = gmt_ -> N;
+  if(Nmu < 3) return;
+
   for (Int_t imu=0; imu < Nmu; imu++) {
     Int_t bx = gmt_ -> CandBx[imu];		
     if (bx != 0) continue;
@@ -668,6 +774,52 @@ void L1AlgoFactory::TripleMuPt(Float_t& cut1, Float_t& cut2, Float_t& cut3, Int_
     cut1 = mu1ptmax;
     cut2 = mu2ptmax;
     cut3 = mu3ptmax;
+  }
+
+  return;
+}
+
+void L1AlgoFactory::QuadMuPt(Float_t& cut1, Float_t& cut2, Float_t& cut3, Float_t& cut4, Int_t qualmin) {
+
+  Float_t mu1ptmax = -10.;
+  Float_t mu2ptmax = -10.;
+  Float_t mu3ptmax = -10.;
+  Float_t mu4ptmax = -10.;
+
+  Int_t Nmu = gmt_ -> N;
+  if(Nmu < 4) return;
+
+  for (Int_t imu=0; imu < Nmu; imu++) {
+    Int_t bx = gmt_ -> CandBx[imu];		
+    if (bx != 0) continue;
+    Float_t pt = gmt_ -> Pt[imu];			
+    Int_t qual = gmt_ -> Qual[imu];        
+    if ( qual < qualmin) continue;
+
+    if(pt >= mu1ptmax)
+      {
+	mu4ptmax = mu3ptmax;
+	mu3ptmax = mu2ptmax;
+	mu2ptmax = mu1ptmax;
+	mu1ptmax = pt;
+      }
+    else if(pt >= mu2ptmax){
+      mu4ptmax = mu3ptmax;
+      mu3ptmax = mu2ptmax;
+      mu2ptmax = pt;
+    }
+    else if(pt >= mu3ptmax){
+      mu4ptmax = mu3ptmax;
+      mu3ptmax = pt;
+    }
+    else if(pt >= mu4ptmax) mu4ptmax = pt;
+  }
+
+  if(mu4ptmax >= 0.){
+    cut1 = mu1ptmax;
+    cut2 = mu2ptmax;
+    cut3 = mu3ptmax;
+    cut4 = mu4ptmax;
   }
 
   return;
@@ -724,74 +876,48 @@ void L1AlgoFactory::DoubleEGPt(Float_t& cut1, Float_t& cut2, Bool_t isIsolated, 
   Bool_t EG1_ER = false;
   Bool_t EG2_ER = false;
 
+  Bool_t EG1_isol = false;
+  Bool_t EG2_isol = false;
+
   Int_t Nele = gt_ -> Nele;
+  if(Nele < 2) return;
+
   for(Int_t ue=0; ue < Nele; ue++) {               
     Int_t bx = gt_ -> Bxel[ue];        		
     if(bx != 0) continue;
-    if(isIsolated && !gt_ -> Isoel[ue]) continue;
     Float_t pt = gt_ -> Rankel[ue];    // the rank of the electron
-    Float_t phi = gt_ -> Phiel[ue];    // the rank of the electron
-    Float_t eta = gt_ -> Etael[ue];    // the rank of the electron
+    Float_t phi = gt_ -> Phiel[ue];    // the phi  of the electron
+    Float_t eta = gt_ -> Etael[ue];    // the eta  of the electron
 
     if(fabs(pt-ele1ptmax) < 0.001 && fabs(phi-ele1Phimax) < 0.001 && fabs(eta-ele1Etamax) < 0.001) continue; //to avoid double counting in noniso/relaxiso lists
 
     if(pt >= ele1ptmax)
       {
 	ele2ptmax = ele1ptmax;
+	EG2_ER = EG1_ER;
+	EG2_isol = EG1_isol;
 	ele1ptmax = pt;
 	ele1Phimax = phi;
 	ele1Etamax = eta;
 	if(eta > 4.5 && eta < 16.5) EG1_ER = true;
 	else EG1_ER = false;
+	EG1_isol = gt_ -> Isoel[ue];
       }
     else if(pt >= ele2ptmax){
       ele2ptmax = pt;
       if(eta > 4.5 && eta < 16.5) EG2_ER = true;
       else EG2_ER = false;
+      EG1_isol = gt_ -> Isoel[ue];
     }
   }
 
   if(isER && (!EG1_ER || !EG2_ER)) return;
+  if(isIsolated && (!EG1_isol || !EG2_isol)) return;
 
   if(ele2ptmax >= 0.){
     cut1 = ele1ptmax;
     cut2 = ele2ptmax;
   }
-
-  return;
-}
-
-void L1AlgoFactory::DoubleIsoEGEGPt(Float_t &myIsoEGPt, Float_t &myEGPt) {
-
-  float maxPtEGIso = -10.; 
-  float maxPtEG    = -10.; 
-
-  Int_t iEGIso = -1;
-
-  Int_t Nele = gt_ -> Nele;
-  for (Int_t ue=0; ue < Nele; ue++) {
-    Int_t bx = gt_ -> Bxel[ue];        		
-    if (bx != 0) continue;
-    Bool_t iso = gt_ -> Isoel[ue];
-    if (! iso) continue;
-    Float_t ptIso = gt_ -> Rankel[ue];    // the rank of the first (isolated) electron
-    if (ptIso >= maxPtEGIso){
-      maxPtEGIso = ptIso;
-      iEGIso = ue;
-    }
-  }
-
-  for (Int_t ue2=0; ue2 < Nele; ue2++) {
-    if(ue2 == iEGIso) continue;
-    Int_t bx2 = gt_ -> Bxel[ue2];
-    if (bx2 != 0) continue;
-
-    Float_t pt2 = gt_ -> Rankel[ue2];    // the rank of the second electron
-    if (pt2 >= maxPtEG) maxPtEG = pt2;
-  }
-  
-  myIsoEGPt = maxPtEGIso;
-  myEGPt = maxPtEG;
 
   return;
 }
@@ -810,6 +936,8 @@ void L1AlgoFactory::TripleEGPt(Float_t& cut1, Float_t& cut2, Float_t& cut3 ) {
 
 
   Int_t Nele = gt_ -> Nele;
+  if(Nele < 3) return;
+
   for (Int_t ue=0; ue < Nele; ue++) {
     Int_t bx = gt_ -> Bxel[ue];        		
     if (bx != 0) continue;
@@ -873,6 +1001,8 @@ void L1AlgoFactory::DoubleJetPt(Float_t& cut1, Float_t& cut2, Bool_t isCentral )
   Float_t maxpt2 = -10.;
 
   Int_t Nj = gt_ -> Njet ;
+  if(Nj < 2) return;
+
   for(Int_t ue=0; ue < Nj; ue++) {
     Int_t bx = gt_ -> Bxjet[ue];        		
     if(bx != 0) continue;
@@ -908,6 +1038,8 @@ void L1AlgoFactory::DoubleJet_Eta1p7_deltaEta4Pt(Float_t& cut1, Float_t& cut2 ) 
   std::vector<std::pair<Float_t,Float_t> > jetPairs;
 
   Int_t Nj = gt_ -> Njet ;
+  if(Nj < 2) return;
+
   for (Int_t ue=0; ue < Nj; ue++) {
     Int_t bx = gt_ -> Bxjet[ue];        		
     if (bx != 0) continue;
@@ -970,6 +1102,8 @@ void L1AlgoFactory::DoubleTauJetEta2p17Pt(Float_t& cut1, Float_t& cut2) {
   Float_t maxpt2 = -10.;
 
   Int_t Nj = gt_ -> Njet ;
+  if(Nj < 2) return;
+
   for(Int_t ue=0; ue < Nj; ue++) {
     Int_t bx = gt_ -> Bxjet[ue];        		
     if(bx != 0) continue; 
@@ -1003,6 +1137,8 @@ void L1AlgoFactory::TripleJetCentralPt(Float_t& cut1, Float_t& cut2, Float_t& cu
   Float_t jet3ptmax = -10.;
 
   Int_t Nj = gt_ -> Njet ;
+  if(Nj < 3) return;
+
   for (Int_t ue=0; ue < Nj; ue++) {
     Int_t bx = gt_ -> Bxjet[ue];        		
     if(bx != 0) continue;
@@ -1051,6 +1187,8 @@ Bool_t L1AlgoFactory::TripleJet_VBF(Float_t jet1, Float_t jet2, Float_t jet3 ) {
   Int_t f3=0;
 
   Int_t Nj = gt_ -> Njet ;
+  if(Nj < 3) return false;
+
   for (Int_t ue=0; ue < Nj; ue++) {
     Int_t bx = gt_ -> Bxjet[ue];        		
     if (bx != 0) continue;
@@ -1085,6 +1223,8 @@ void L1AlgoFactory::QuadJetPt(Float_t& cut1, Float_t& cut2, Float_t& cut3, Float
   Float_t jet4ptmax = -10.;
 
   Int_t Nj = gt_ -> Njet ;
+  if(Nj < 4) return;
+
   for (Int_t ue=0; ue < Nj; ue++) {
     Int_t bx = gt_ -> Bxjet[ue];        		
     if(bx != 0) continue;
@@ -1149,7 +1289,7 @@ void L1AlgoFactory::ETTVal(Float_t& ETTcut) {
   return;
 }
 
-void L1AlgoFactory::Mu_EGPt(Float_t& mucut, Float_t& EGcut, Int_t qualmin) {
+void L1AlgoFactory::Mu_EGPt(Float_t& mucut, Float_t& EGcut, Bool_t isIsolated, Int_t qualmin) {
 
   Float_t muptmax = -10.;
 
@@ -1169,6 +1309,7 @@ void L1AlgoFactory::Mu_EGPt(Float_t& mucut, Float_t& EGcut, Int_t qualmin) {
   for(Int_t ue=0; ue < Nele; ue++) {
     Int_t bx = gt_ -> Bxel[ue];        		
     if(bx != 0) continue;
+    if(isIsolated && !gt_ -> Isoel[ue]) continue;
     Float_t pt = gt_ -> Rankel[ue];    // the rank of the electron
     if(pt >= eleptmax) eleptmax = pt;
   }
@@ -1189,6 +1330,8 @@ void L1AlgoFactory::DoubleMu_EGPt(Float_t& mucut, Float_t& EGcut ) {
   Float_t EGmax = -10.;
 
   Int_t Nmu = gmt_ -> N;
+  if(Nmu < 2) return;
+
   for (Int_t imu=0; imu < Nmu; imu++) {
     Int_t bx = gmt_ -> CandBx[imu];		
     if (bx != 0) continue;
@@ -1237,6 +1380,8 @@ void L1AlgoFactory::Mu_DoubleEGPt(Float_t& mucut, Float_t& EGcut ) {
   }
 
   Int_t Nele = gt_ -> Nele;
+  if(Nele < 2) return;
+
   for (Int_t ue=0; ue < Nele; ue++) {
     Int_t bx = gt_ -> Bxel[ue];        		
     if(bx != 0) continue;
@@ -1280,6 +1425,8 @@ void L1AlgoFactory::Mu_DoubleJetCentralPt(Float_t& mucut, Float_t& jetcut) {
   }
 
   Int_t Nj = gt_ -> Njet ;
+  if(Nj < 2) return;
+
   for (Int_t ue=0; ue < Nj; ue++) {
     Int_t bx = gt_ -> Bxjet[ue];        		
     if (bx != 0) continue;
@@ -1527,6 +1674,8 @@ void L1AlgoFactory::EG_DoubleJetCentralPt(Float_t& EGcut, Float_t& jetcut) {
   }  // end loop over EM objects
 
   Int_t Nj = gt_ -> Njet ;
+  if(Nj < 2) return;
+
   for (Int_t ue=0; ue < Nj; ue++) {
     Int_t bx = gt_ -> Bxjet[ue];        		
     if (bx != 0) continue;
@@ -1561,6 +1710,8 @@ void L1AlgoFactory::DoubleEG_HTPt(Float_t& EGcut, Float_t& HTcut) {
   Float_t ele1Etamax = -1000.;
 
   Int_t Nele = gt_ -> Nele;
+  if(Nele < 2) return;
+
   for(Int_t ue=0; ue < Nele; ue++) {
     Int_t bx = gt_ -> Bxel[ue];        		
     if(bx != 0) continue;
@@ -1599,6 +1750,8 @@ void L1AlgoFactory::DoubleJetCentral_ETMPt(Float_t& jetcut1, Float_t& jetcut2, F
   Float_t TheETM = adc / 2. ;
 
   Int_t Nj = gt_ -> Njet ;
+  if(Nj < 2) return;
+
   for (Int_t ue=0; ue < Nj; ue++) {
     Int_t bx = gt_ -> Bxjet[ue];        		
     if(bx != 0) continue;
@@ -1620,6 +1773,86 @@ void L1AlgoFactory::DoubleJetCentral_ETMPt(Float_t& jetcut1, Float_t& jetcut2, F
     jetcut1 = jetptmax1;
     jetcut2 = jetptmax2;
     ETMcut = TheETM;
+  }
+
+  return;
+}
+
+void L1AlgoFactory::Muer_TauJetEta2p17Pt(Float_t& mucut, Float_t& taucut) {
+
+  Float_t maxptmu  = -10.;
+  Float_t maxpttau = -10.;
+
+  Int_t Nmu = gmt_ -> N;
+  if(Nmu < 1) return;
+  for (Int_t imu=0; imu < Nmu; imu++) {
+    Int_t bx = gmt_ -> CandBx[imu];		
+    if(bx != 0) continue;
+    Float_t pt = gmt_ -> Pt[imu];			
+    Int_t qual = gmt_ -> Qual[imu];        
+    if( qual < 4) continue;
+    Float_t eta = gmt_  -> Eta[imu];        
+    if(fabs(eta) > 2.1) continue;
+    if(pt >= maxptmu) maxptmu = pt;
+  }
+
+  Int_t Nj = gt_ -> Njet ;
+  for(Int_t ue=0; ue < Nj; ue++) {
+    Int_t bx = gt_ -> Bxjet[ue];        		
+    if(bx != 0) continue; 
+    Bool_t isTauJet = gt_ -> Taujet[ue];
+    if(!isTauJet) continue;
+    Float_t rank = gt_ -> Rankjet[ue];    // the rank of the electron
+    Float_t pt = CorrectedL1JetPtByGCTregions(gt_->Etajet[ue],rank*4.);
+    Float_t eta = gt_ -> Etajet[ue];
+    if(eta < 4.5 || eta > 16.5) continue;  // eta = 5 - 16
+
+    if(pt >= maxpttau) maxpttau = pt;
+  }
+
+  if(maxptmu >= 0.){
+    mucut  = maxptmu;
+    taucut = maxpttau;
+  }
+
+  return;
+}
+
+void L1AlgoFactory::IsoEGer_TauJetEta2p17Pt(Float_t& egcut, Float_t& taucut) {
+
+  Float_t eleptmax  = -10.;
+  Float_t maxpttau  = -10.;
+
+  Int_t Nele = gt_ -> Nele;
+  if(Nele < 1) continue;
+  for (Int_t ue=0; ue < Nele; ue++) {
+    Int_t bx = gt_ -> Bxel[ue];        		
+    if(bx != 0) continue;
+    Bool_t iso = gt_ -> Isoel[ue];
+    if(!iso) continue;
+    Float_t eta = gt_ -> Etael[ue];
+    if(eta < 4.5 || eta > 16.5) continue;  // eta = 5 - 16
+    Float_t pt = gt_->Rankel[ue];
+    if(pt >= eleptmax) eleptmax = pt;
+  }
+
+  Int_t Nj = gt_ -> Njet ;
+  for(Int_t ue=0; ue < Nj; ue++) {
+    Int_t bx = gt_ -> Bxjet[ue];        		
+    if(bx != 0) continue; 
+    Bool_t isTauJet = gt_ -> Taujet[ue];
+    if(!isTauJet) continue;
+    Float_t rank = gt_ -> Rankjet[ue];    // the rank of the jet
+    Float_t pt = CorrectedL1JetPtByGCTregions(gt_->Etajet[ue],rank*4.);
+    Float_t eta = gt_ -> Etajet[ue];
+    if(eta < 4.5 || eta > 16.5) continue;  // eta = 5 - 16
+
+    if(pt >= maxpttau) maxpttau = pt;
+  }
+
+  if(eleptmax >= 0.){
+    egcut  = eleptmax;
+    taucut = maxpttau;
   }
 
   return;
