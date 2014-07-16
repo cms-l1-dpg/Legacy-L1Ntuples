@@ -514,6 +514,8 @@ Double_t L1AlgoFactory::CorrectedL1JetPtByGCTregions(Double_t JetiEta,Double_t J
 void L1AlgoFactory::SingleMuPt(Float_t& ptcut, Int_t qualmin) {
 
   Int_t Nmu = gmt_ -> N;
+  if(Nmu < 1) return;
+
   Float_t ptmax = -10.;
 
   for(Int_t imu=0; imu < Nmu; imu++) {
@@ -532,6 +534,8 @@ void L1AlgoFactory::SingleMuPt(Float_t& ptcut, Int_t qualmin) {
 void L1AlgoFactory::SingleMuEta2p1Pt(Float_t& ptcut) {
 
   Int_t Nmu = gmt_ -> N;
+  if(Nmu < 1) return;
+
   Float_t ptmax = -10.;
 
   for(Int_t imu=0; imu < Nmu; imu++) { 
@@ -867,6 +871,9 @@ void L1AlgoFactory::SingleEGEta2p1Pt(Float_t& cut, Bool_t isIsolated ) {
 
 void L1AlgoFactory::DoubleEGPt(Float_t& cut1, Float_t& cut2, Bool_t isIsolated, Bool_t isER ) {
 
+  Int_t Nele = gt_ -> Nele;
+  if(Nele < 2) return;
+
   Float_t ele1ptmax = -10.;
   Float_t ele2ptmax = -10.;
 
@@ -878,9 +885,6 @@ void L1AlgoFactory::DoubleEGPt(Float_t& cut1, Float_t& cut2, Bool_t isIsolated, 
 
   Bool_t EG1_isol = false;
   Bool_t EG2_isol = false;
-
-  Int_t Nele = gt_ -> Nele;
-  if(Nele < 2) return;
 
   for(Int_t ue=0; ue < Nele; ue++) {               
     Int_t bx = gt_ -> Bxel[ue];        		
@@ -924,6 +928,9 @@ void L1AlgoFactory::DoubleEGPt(Float_t& cut1, Float_t& cut2, Bool_t isIsolated, 
 
 void L1AlgoFactory::TripleEGPt(Float_t& cut1, Float_t& cut2, Float_t& cut3 ) {
 
+  Int_t Nele = gt_ -> Nele;
+  if(Nele < 3) return;
+
   Float_t ele1ptmax = -10.;
   Float_t ele2ptmax = -10.;
   Float_t ele3ptmax = -10.;
@@ -933,10 +940,6 @@ void L1AlgoFactory::TripleEGPt(Float_t& cut1, Float_t& cut2, Float_t& cut3 ) {
 
   Float_t ele2Phimax = -1000.;
   Float_t ele2Etamax = -1000.;
-
-
-  Int_t Nele = gt_ -> Nele;
-  if(Nele < 3) return;
 
   for (Int_t ue=0; ue < Nele; ue++) {
     Int_t bx = gt_ -> Bxel[ue];        		
@@ -1032,13 +1035,13 @@ void L1AlgoFactory::DoubleJetPt(Float_t& cut1, Float_t& cut2, Bool_t isCentral )
 
 void L1AlgoFactory::DoubleJet_Eta1p7_deltaEta4Pt(Float_t& cut1, Float_t& cut2 ) {
 
+  Int_t Nj = gt_ -> Njet ;
+  if(Nj < 2) return;
+
   Float_t maxpt1 = -10.;
   Float_t maxpt2 = -10.;
   Bool_t corr = false;
   std::vector<std::pair<Float_t,Float_t> > jetPairs;
-
-  Int_t Nj = gt_ -> Njet ;
-  if(Nj < 2) return;
 
   for (Int_t ue=0; ue < Nj; ue++) {
     Int_t bx = gt_ -> Bxjet[ue];        		
@@ -1821,10 +1824,11 @@ void L1AlgoFactory::Muer_TauJetEta2p17Pt(Float_t& mucut, Float_t& taucut) {
 void L1AlgoFactory::IsoEGer_TauJetEta2p17Pt(Float_t& egcut, Float_t& taucut) {
 
   Float_t eleptmax  = -10.;
+  Float_t eleetamax = -999.;
   Float_t maxpttau  = -10.;
 
   Int_t Nele = gt_ -> Nele;
-  if(Nele < 1) continue;
+  if(Nele < 1) return;
   for (Int_t ue=0; ue < Nele; ue++) {
     Int_t bx = gt_ -> Bxel[ue];        		
     if(bx != 0) continue;
@@ -1833,7 +1837,10 @@ void L1AlgoFactory::IsoEGer_TauJetEta2p17Pt(Float_t& egcut, Float_t& taucut) {
     Float_t eta = gt_ -> Etael[ue];
     if(eta < 4.5 || eta > 16.5) continue;  // eta = 5 - 16
     Float_t pt = gt_->Rankel[ue];
-    if(pt >= eleptmax) eleptmax = pt;
+    if(pt >= eleptmax){
+      eleptmax = pt;
+      eleetamax = eta;
+    }
   }
 
   Int_t Nj = gt_ -> Njet ;
@@ -1846,6 +1853,8 @@ void L1AlgoFactory::IsoEGer_TauJetEta2p17Pt(Float_t& egcut, Float_t& taucut) {
     Float_t pt = CorrectedL1JetPtByGCTregions(gt_->Etajet[ue],rank*4.);
     Float_t eta = gt_ -> Etajet[ue];
     if(eta < 4.5 || eta > 16.5) continue;  // eta = 5 - 16
+
+    if(fabs(eta-eleetamax) < 2) continue;
 
     if(pt >= maxpttau) maxpttau = pt;
   }
