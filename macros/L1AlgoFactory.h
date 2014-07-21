@@ -43,18 +43,22 @@ class L1AlgoFactory{
   void Mu_EGPt(Float_t& mucut, Float_t& EGcut, Bool_t isIsolated = false, Int_t qualmin=4);
   void DoubleMu_EGPt(Float_t& mucut, Float_t& EGcut );
   void Mu_DoubleEGPt(Float_t& mucut, Float_t& EGcut );
+
   void Muer_JetCentralPt(Float_t& mucut, Float_t& jetcut);
   void Mu_JetCentral_deltaPt(Float_t& mucut, Float_t& jetcut);
   void Mu_DoubleJetCentralPt(Float_t& mucut, Float_t& jetcut);
   void Mu_HTTPt(Float_t& mucut, Float_t& HTcut );
   void Muer_ETMPt(Float_t& mucut, Float_t& ETMcut );
+  void Muer_TauJetEta2p17Pt(Float_t& mucut, Float_t& taucut);
+
   void SingleIsoEG_Eta2p1_ETMPt(Float_t& egcut, Float_t& ETMcut);
   void EG_FwdJetPt(Float_t& EGcut, Float_t& FWcut);
   void EG_DoubleJetCentralPt(Float_t& EGcut, Float_t& jetcut);
   void DoubleEG_HTPt(Float_t& EGcut, Float_t& HTcut);
-  void DoubleJetCentral_ETMPt(Float_t& jetcut1, Float_t& jetcut2, Float_t& ETMcut);
-  void Muer_TauJetEta2p17Pt(Float_t& mucut, Float_t& taucut);
   void IsoEGer_TauJetEta2p17Pt(Float_t& egcut, Float_t& taucut);
+
+  void DoubleJetCentral_ETMPt(Float_t& jetcut1, Float_t& jetcut2, Float_t& ETMcut);
+  void QuadJetCentral_TauJetPt(Float_t& jetcut, Float_t& taucut);
 
   void ETMVal(Float_t& ETMcut );
   void HTTVal(Float_t& HTTcut );
@@ -100,6 +104,7 @@ class L1AlgoFactory{
   Bool_t DoubleJetCentral_ETM(Float_t jetcut1, Float_t jetcut2, Float_t ETMcut);
   Bool_t Muer_TauJetEta2p17(Float_t mucut, Float_t taucut);
   Bool_t IsoEGer_TauJetEta2p17(Float_t egcut, Float_t taucut);
+  Bool_t QuadJetCentral_TauJet(Float_t jetcut, Float_t taucut);
 
   inline Bool_t correlateInPhi(Int_t jetphi, Int_t muphi, Int_t delta=1);
   inline Bool_t correlateInEta(Int_t mueta, Int_t jeteta, Int_t delta=1);
@@ -424,6 +429,14 @@ Bool_t L1AlgoFactory::IsoEGer_TauJetEta2p17(Float_t egcut, Float_t taucut){
   Float_t tmp_taucut = -10.;
   IsoEGer_TauJetEta2p17Pt(tmp_egcut, tmp_taucut);
   if(tmp_egcut >= egcut && tmp_taucut >= taucut) return true;
+  return false;
+}
+
+Bool_t L1AlgoFactory::QuadJetCentral_TauJet(Float_t jetcut, Float_t taucut){
+  Float_t tmp_jetcut = -10.;
+  Float_t tmp_taucut = -10.;
+  QuadJetCentral_TauJetPt(tmp_jetcut,tmp_taucut);
+  if(tmp_jetcut >= jetcut && tmp_taucut >= taucut) return true;
   return false;
 }
 
@@ -1866,5 +1879,65 @@ void L1AlgoFactory::IsoEGer_TauJetEta2p17Pt(Float_t& egcut, Float_t& taucut) {
 
   return;
 }
+
+void L1AlgoFactory::QuadJetCentral_TauJetPt(Float_t& jetcut, Float_t& taucut){
+
+  Float_t jet1ptmax = -10.;
+  Float_t jet2ptmax = -10.;
+  Float_t jet3ptmax = -10.;
+  Float_t jet4ptmax = -10.;
+  Float_t maxpttau  = -10.;
+
+  Int_t Nj = gt_ -> Njet ;
+  if(Nj < 5) return;
+
+  for (Int_t ue=0; ue < Nj; ue++) {
+    Int_t bx = gt_ -> Bxjet[ue];        		
+    if(bx != 0) continue;
+    Bool_t isFwdJet = gt_ -> Fwdjet[ue];
+    if(isFwdJet) continue;
+    if(NOTauInJets && gt_->Taujet[ue]) continue;
+    if(noHF && (gt_->Etajet[ue] < 5 || gt_->Etajet[ue] > 17)) continue;
+
+    Float_t rank = gt_ -> Rankjet[ue];
+    Float_t pt = CorrectedL1JetPtByGCTregions(gt_->Etajet[ue],rank*4.);
+
+    if(pt >= jet1ptmax)
+      {
+	jet4ptmax = jet3ptmax;
+	jet3ptmax = jet2ptmax;
+	jet2ptmax = jet1ptmax;
+	jet1ptmax = pt;
+      }
+    else if(pt >= jet2ptmax){
+      jet4ptmax = jet3ptmax;
+      jet3ptmax = jet2ptmax;
+      jet2ptmax = pt;
+    }
+    else if(pt >= jet3ptmax){
+      jet4ptmax = jet3ptmax;
+      jet3ptmax = pt;
+    }
+    else if(pt >= jet4ptmax) jet4ptmax = pt;
+  }
+
+  for(Int_t ue=0; ue < Nj; ue++) {
+    Int_t bx = gt_ -> Bxjet[ue];        		
+    if(bx != 0) continue; 
+    Bool_t isTauJet = gt_ -> Taujet[ue];
+    if(!isTauJet) continue;
+    Float_t rank = gt_ -> Rankjet[ue];    // the rank of the jet
+    Float_t pt = CorrectedL1JetPtByGCTregions(gt_->Etajet[ue],rank*4.);
+    if(pt >= maxpttau) maxpttau = pt;
+  }
+
+  if(jet4ptmax >= 0. && maxpttau >= 0.){
+    jetcut = jet4ptmax;
+    taucut = maxpttau;
+  }
+
+  return;
+}
+
 
 #endif
