@@ -1,3 +1,4 @@
+#include "math.h"
 #include "L1TriggerDPG/L1Ntuples/interface/L1AnalysisDTTF.h"
 #include "math.h"
 
@@ -15,7 +16,7 @@ L1Analysis::L1AnalysisDTTF::~L1AnalysisDTTF()
 void L1Analysis::L1AnalysisDTTF::SetDTPH(const edm::Handle<L1MuDTChambPhContainer > L1MuDTChambPhContainer, unsigned int maxDTPH)
 {
    
-   const L1MuDTChambPhContainer::Phi_Container *PhContainer = L1MuDTChambPhContainer->getContainer();
+  const L1MuDTChambPhContainer::Phi_Container *PhContainer = L1MuDTChambPhContainer->getContainer();
     
    dttf_.phSize = PhContainer->size();
    int iphtr=0;

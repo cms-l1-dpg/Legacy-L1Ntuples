@@ -64,7 +64,6 @@
 #include "DataFormats/EcalDigi/interface/EcalDigiCollections.h"
 #include "DataFormats/HcalDigi/interface/HcalDigiCollections.h"
 
-
 //----------------
 // Constructor  --
 //----------------

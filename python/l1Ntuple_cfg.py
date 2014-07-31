@@ -12,7 +12,7 @@ process.load("Configuration.StandardSequences.RawToDigi_Data_cff")
 process.load('Configuration.StandardSequences.L1Reco_cff')
 process.load('Configuration.StandardSequences.Reconstruction_cff')
 process.load('Configuration/StandardSequences/EndOfProcess_cff')
-process.load('Configuration.Geometry.GeometryIdeal_cff')
+process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 process.load('Configuration/StandardSequences/MagneticField_AutoFromDBCurrent_cff')
 process.load("JetMETCorrections.Configuration.DefaultJEC_cff")
 process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
@@ -64,4 +64,3 @@ process.source = cms.Source ("PoolSource",
                              fileNames = readFiles,
                              secondaryFileNames = secFiles
                              )
-
