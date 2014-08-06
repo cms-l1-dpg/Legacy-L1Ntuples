@@ -27,7 +27,13 @@ process.gctDigis.numberOfGctSamplesToUnpack = cms.uint32(5)
 process.l1extraParticles.centralBxOnly = cms.bool(False)
 
 # L1 ntuple producers
-process.load("L1TriggerDPG.L1Ntuples.l1NtupleProducer_cfi")
+## process.load("L1TriggerDPG.L1Ntuples.l1NtupleProducer_cfi")
+import L1TriggerDPG.L1Ntuples.l1NtupleProducer_cfi 
+process.l1NtupleProducer = L1TriggerDPG.L1Ntuples.l1NtupleProducer_cfi.l1NtupleProducer.clone()
+
+import L1TriggerDPG.L1Ntuples.l1NtupleProducer_Stage1Layer2_cfi 
+process.l1NtupleProducerStage1Layer2 = L1TriggerDPG.L1Ntuples.l1NtupleProducer_Stage1Layer2_cfi.l1NtupleProducer.clone()
+
 process.load("L1TriggerDPG.L1Ntuples.l1RecoTreeProducer_cfi")
 process.load("L1TriggerDPG.L1Ntuples.l1ExtraTreeProducer_cfi")
 process.load("L1TriggerDPG.L1Ntuples.l1MenuTreeProducer_cfi")

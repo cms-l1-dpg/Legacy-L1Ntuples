@@ -1,5 +1,6 @@
 #include "math.h"
 #include "L1TriggerDPG/L1Ntuples/interface/L1AnalysisDTTF.h"
+#include "math.h"
 
 
 L1Analysis::L1AnalysisDTTF::L1AnalysisDTTF()
