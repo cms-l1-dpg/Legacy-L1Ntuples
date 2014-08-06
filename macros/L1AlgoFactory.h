@@ -1,11 +1,6 @@
 #ifndef L1AlgoFactory_h
 #define L1AlgoFactory_h
 
-#include <utility>
-#include <iostream>
-
-#include "TMath.h"
-
 #include "L1AnalysisGMTDataFormat.h"
 #include "L1AnalysisGTDataFormat.h"
 
@@ -50,6 +45,8 @@ class L1AlgoFactory{
   void Mu_HTTPt(Float_t& mucut, Float_t& HTcut );
   void Muer_ETMPt(Float_t& mucut, Float_t& ETMcut );
   void Muer_TauJetEta2p17Pt(Float_t& mucut, Float_t& taucut);
+  void Muer_ETM_HTTPt(Float_t& mucut, Float_t& ETMcut, Float_t& HTTcut);
+  void Muer_ETM_JetCPt(Float_t& mucut, Float_t& ETMcut, Float_t& jetcut);
 
   void SingleIsoEG_Eta2p1_ETMPt(Float_t& egcut, Float_t& ETMcut);
   void EG_FwdJetPt(Float_t& EGcut, Float_t& FWcut);
@@ -59,6 +56,7 @@ class L1AlgoFactory{
 
   void DoubleJetCentral_ETMPt(Float_t& jetcut1, Float_t& jetcut2, Float_t& ETMcut);
   void QuadJetCentral_TauJetPt(Float_t& jetcut, Float_t& taucut);
+  void DoubleJetC_deltaPhi7_HTTPt(Float_t& jetcut, Float_t& httcut);
 
   void ETMVal(Float_t& ETMcut );
   void HTTVal(Float_t& HTTcut );
@@ -92,19 +90,25 @@ class L1AlgoFactory{
   Bool_t Mu_EG(Float_t mucut, Float_t EGcut, Bool_t isIsolated = false, Int_t qualmin=4);
   Bool_t DoubleMu_EG(Float_t mucut, Float_t EGcut );
   Bool_t Mu_DoubleEG(Float_t mucut, Float_t EGcut );
+
   Bool_t Muer_JetCentral(Float_t mucut, Float_t jetcut);
   Bool_t Mu_JetCentral_delta(Float_t mucut, Float_t jetcut);
   Bool_t Mu_DoubleJetCentral(Float_t mucut, Float_t jetcut);
   Bool_t Mu_HTT(Float_t mucut, Float_t HTcut);
   Bool_t Muer_ETM(Float_t mucut, Float_t ETMcut);
+  Bool_t Muer_TauJetEta2p17(Float_t mucut, Float_t taucut);
+  Bool_t Muer_ETM_HTT(Float_t mucut, Float_t ETMcut, Float_t HTTcut);
+  Bool_t Muer_ETM_JetC(Float_t mucut, Float_t ETMcut, Float_t jetcut);
+
   Bool_t SingleIsoEG_Eta2p1_ETM(Float_t egcut, Float_t ETMcut);
   Bool_t EG_FwdJet(Float_t EGcut, Float_t FWcut);
   Bool_t EG_DoubleJetCentral(Float_t EGcut, Float_t jetcut);
   Bool_t DoubleEG_HT(Float_t EGcut, Float_t HTcut);
-  Bool_t DoubleJetCentral_ETM(Float_t jetcut1, Float_t jetcut2, Float_t ETMcut);
-  Bool_t Muer_TauJetEta2p17(Float_t mucut, Float_t taucut);
   Bool_t IsoEGer_TauJetEta2p17(Float_t egcut, Float_t taucut);
+
+  Bool_t DoubleJetCentral_ETM(Float_t jetcut1, Float_t jetcut2, Float_t ETMcut);
   Bool_t QuadJetCentral_TauJet(Float_t jetcut, Float_t taucut);
+  Bool_t DoubleJetC_deltaPhi7_HTT(Float_t jetcut, Float_t httcut);
 
   inline Bool_t correlateInPhi(Int_t jetphi, Int_t muphi, Int_t delta=1);
   inline Bool_t correlateInEta(Int_t mueta, Int_t jeteta, Int_t delta=1);
@@ -440,12 +444,38 @@ Bool_t L1AlgoFactory::QuadJetCentral_TauJet(Float_t jetcut, Float_t taucut){
   return false;
 }
 
+Bool_t L1AlgoFactory::DoubleJetC_deltaPhi7_HTT(Float_t jetcut, Float_t HTTcut){
+  Float_t tmp_jetcut = -10.;
+  Float_t tmp_httcut = -10.;
+  DoubleJetC_deltaPhi7_HTTPt(tmp_jetcut,tmp_httcut);
+  if(tmp_jetcut >= jetcut && tmp_httcut >= HTTcut) return true;
+  return false;
+}
+
+Bool_t L1AlgoFactory:: Muer_ETM_HTT(Float_t mucut, Float_t ETMcut, Float_t HTTcut){
+  Float_t tmp_mucut  = -10.;
+  Float_t tmp_ETMcut = -10.;
+  Float_t tmp_HTTcut = -10.;
+  Muer_ETM_HTTPt(tmp_mucut,tmp_ETMcut,tmp_HTTcut);
+  if(tmp_mucut >= mucut && tmp_ETMcut >= ETMcut && tmp_HTTcut >= HTTcut) return true;
+  return false;
+}
+
+Bool_t L1AlgoFactory:: Muer_ETM_JetC(Float_t mucut, Float_t ETMcut, Float_t jetcut){
+  Float_t tmp_mucut  = -10.;
+  Float_t tmp_ETMcut = -10.;
+  Float_t tmp_jetcut = -10.;
+  Muer_ETM_JetCPt(tmp_mucut,tmp_ETMcut,tmp_jetcut);
+  if(tmp_mucut >= mucut && tmp_ETMcut >= ETMcut && tmp_jetcut >= jetcut) return true;
+  return false;
+}
+
 inline Bool_t L1AlgoFactory::correlateInPhi(Int_t jetphi, Int_t muphi, Int_t delta){
-  return fabs(muphi-jetphi)<fabs(2 +delta-1) || fabs(muphi-jetphi)>fabs(PHIBINS-2 - (delta-1) );
+  return fabs(muphi-jetphi) < fabs(1 + delta) || fabs(muphi-jetphi) > fabs(PHIBINS - 1 - delta) ;
 }
 
 inline Bool_t L1AlgoFactory::correlateInEta(Int_t mueta, Int_t jeteta, Int_t delta) {
-  return fabs(mueta-jeteta)<2 + delta-1;
+  return fabs(mueta-jeteta) < 1 + delta;
 }
 
 Int_t L1AlgoFactory::etaMuIdx(Double_t eta) {
@@ -485,9 +515,9 @@ Int_t L1AlgoFactory::etaINjetCoord(Double_t eta) {
 
 inline Double_t L1AlgoFactory::degree(Double_t radian) {
   if (radian<0.)
-    return 360.+(radian/TMath::Pi()*180.);
+    return 360.+(radian/acos(-1.)*180.);
   else
-    return radian/TMath::Pi()*180.;
+    return radian/acos(-1.)*180.;
 }
 
 // correction for RCT->GCT bins (from HCAL January 2012)
@@ -726,7 +756,7 @@ void L1AlgoFactory::Onia2015Pt(Float_t& ptcut1, Float_t& ptcut2, Bool_t isER, Bo
       if(isOS && charge1*charge2 > 0) continue;
 
       Float_t deta = ieta1 - ieta2; 
-      if ( fabs(deta) <= delta){
+      if(fabs(deta) <= delta){
 	corr = true;
 	muonPairs.push_back(std::pair<Float_t,Float_t>(pt,pt2));
       }
@@ -737,11 +767,11 @@ void L1AlgoFactory::Onia2015Pt(Float_t& ptcut1, Float_t& ptcut2, Bool_t isER, Bo
   if(corr){
     std::vector<std::pair<Float_t,Float_t> >::const_iterator muonPairIt  = muonPairs.begin();
     std::vector<std::pair<Float_t,Float_t> >::const_iterator muonPairEnd = muonPairs.end();
-    for (; muonPairIt != muonPairEnd; ++muonPairIt) {
+    for(; muonPairIt != muonPairEnd; ++muonPairIt){
       Float_t pt1 = muonPairIt->first;
       Float_t pt2 = muonPairIt->second;
       
-      if ( pt1 > maxpt1 || (fabs(maxpt1-pt1)<10E-2 && pt2>maxpt2) ) 
+      if(pt1 > maxpt1 || (fabs(maxpt1-pt1)<10E-2 && pt2>maxpt2) ) 
 	{
 	  maxpt1 = pt1;
 	  maxpt2 = pt2;
@@ -929,7 +959,7 @@ void L1AlgoFactory::DoubleEGPt(Float_t& cut1, Float_t& cut2, Bool_t isIsolated, 
   }
 
   if(isER && (!EG1_ER || !EG2_ER)) return;
-  if(isIsolated && (!EG1_isol || !EG2_isol)) return;
+  if(isIsolated && (!EG1_isol && !EG2_isol)) return;
 
   if(ele2ptmax >= 0.){
     cut1 = ele1ptmax;
@@ -1213,14 +1243,14 @@ Bool_t L1AlgoFactory::TripleJet_VBF(Float_t jet1, Float_t jet2, Float_t jet3 ) {
     Float_t pt = CorrectedL1JetPtByGCTregions(gt_->Etajet[ue],rank*4.);
 
     if (isFwdJet) {
-      if (pt >= jet1) f1 ++;
-      if (pt >= jet2) f2 ++;
-      if (pt >= jet3) f3 ++;              
+      if(pt >= jet1) f1++;
+      if(pt >= jet2) f2++;
+      if(pt >= jet3) f3++;              
     } 
     else {
-      if (pt >= jet1) n1 ++;
-      if (pt >= jet2) n2 ++;
-      if (pt >= jet3) n3 ++;
+      if(pt >= jet1) n1++;
+      if(pt >= jet2) n2++;
+      if(pt >= jet3) n3++;
     }    
   }
 
@@ -1283,7 +1313,7 @@ void L1AlgoFactory::QuadJetPt(Float_t& cut1, Float_t& cut2, Float_t& cut3, Float
 
 void L1AlgoFactory::ETMVal(Float_t& ETMcut ) {
 
-  Float_t adc = gt_->RankETM ;
+  Float_t adc = gt_->RankETM;
   Float_t TheETM = adc/2.;
   ETMcut = TheETM;
   return;
@@ -1291,7 +1321,7 @@ void L1AlgoFactory::ETMVal(Float_t& ETMcut ) {
 
 void L1AlgoFactory::HTTVal(Float_t& HTTcut) {
 
-  Float_t adc = gt_->RankHTT ;
+  Float_t adc = gt_->RankHTT;
   Float_t TheHTT = adc/2.;
   HTTcut = TheHTT;
   return;
@@ -1299,7 +1329,7 @@ void L1AlgoFactory::HTTVal(Float_t& HTTcut) {
 
 void L1AlgoFactory::ETTVal(Float_t& ETTcut) {
 
-  Float_t adc = gt_->RankETT ;
+  Float_t adc = gt_->RankETT;
   Float_t TheETT = adc/2.;
   ETTcut = TheETT;
   return;
@@ -1939,5 +1969,142 @@ void L1AlgoFactory::QuadJetCentral_TauJetPt(Float_t& jetcut, Float_t& taucut){
   return;
 }
 
+void L1AlgoFactory::DoubleJetC_deltaPhi7_HTTPt(Float_t& jetcut, Float_t& httcut){
+
+  Float_t adc = gt_->RankHTT;
+  Float_t TheHTT = adc/2.;
+  httcut = TheHTT;
+
+  Int_t Nj = gt_->Njet;
+  if(Nj < 2) return;
+
+  Float_t maxpt1 = -10.;
+  Float_t maxpt2 = -10.;
+  Bool_t corr = false;
+  std::vector<std::pair<Float_t,Float_t> > jetPairs;
+
+  for (Int_t ue=0; ue < Nj; ue++) {
+    Int_t bx = gt_ -> Bxjet[ue];        		
+    if (bx != 0) continue;
+    Bool_t isFwdJet = gt_ -> Fwdjet[ue];
+    if (isFwdJet) continue;
+    if(NOTauInJets && gt_->Taujet[ue]) continue;
+    if(noHF && (gt_->Etajet[ue] < 5 || gt_->Etajet[ue] > 17)) continue;
+
+    Float_t rank = gt_ -> Rankjet[ue];
+    Float_t pt = CorrectedL1JetPtByGCTregions(gt_->Etajet[ue],rank*4.);
+    Float_t phi1 = gt_ -> Phijet[ue];
+
+    for(Int_t ve=0; ve < Nj; ve++) {
+      if(ve == ue) continue;
+      Int_t bx2 = gt_->Bxjet[ve];        		
+      if(bx2!= 0) continue;
+      Bool_t isFwdJet2 = gt_->Fwdjet[ve];
+      if(isFwdJet2) continue;
+      if(NOTauInJets && gt_->Taujet[ve]) continue;
+      if(noHF && (gt_->Etajet[ve] < 5 || gt_->Etajet[ve] > 17)) continue;
+
+      Float_t rank2 = gt_->Rankjet[ve];
+      Float_t pt2 = rank2*4.;
+      Float_t phi2 = gt_->Phijet[ve];
+
+      if(correlateInPhi((int)phi1, (int)phi2, 7)){
+	corr = true;
+	jetPairs.push_back(std::pair<Float_t,Float_t>(pt,pt2));
+      }
+
+    }
+  }
+
+  if(corr){
+    std::vector<std::pair<Float_t,Float_t> >::const_iterator jetPairIt  = jetPairs.begin();
+    std::vector<std::pair<Float_t,Float_t> >::const_iterator jetPairEnd = jetPairs.end();
+    for(; jetPairIt != jetPairEnd; ++jetPairIt) {
+      Float_t pt1 = jetPairIt->first;
+      Float_t pt2 = jetPairIt->second;
+      
+      if (pt1 > maxpt1 || (fabs(maxpt1-pt1)<10E-2 && pt2>maxpt2) ) 
+	{
+	  maxpt1 = pt1;
+	  maxpt2 = pt2;
+	}
+    }
+  }
+
+  jetcut = maxpt2;
+
+  return;
+}
+
+void L1AlgoFactory::Muer_ETM_HTTPt(Float_t& mucut, Float_t& ETMcut, Float_t& HTTcut){
+
+  Int_t Nmu = gmt_ -> N;
+  if(Nmu < 1) return;
+
+  Float_t ptmax = -10.;
+
+  for(Int_t imu=0; imu < Nmu; imu++) { 
+    Int_t bx = gmt_ -> CandBx[imu];		
+    if(bx != 0) continue;
+    Float_t pt = gmt_ -> Pt[imu];			
+    Float_t eta = gmt_  -> Eta[imu];        
+    if(fabs(eta) > 2.1) continue;
+    if(pt >= ptmax) ptmax = pt;
+  }
+
+  mucut = ptmax;
+
+  Float_t adcETM = gt_->RankETM ;
+  Float_t TheETM = adcETM/2.;
+  ETMcut = TheETM;
+
+  Float_t adcHTT = gt_->RankHTT ;
+  Float_t TheHTT = adcHTT/2.;
+  HTTcut = TheHTT;
+
+  return;
+}
+
+void L1AlgoFactory::Muer_ETM_JetCPt(Float_t& mucut, Float_t& ETMcut, Float_t& jetcut){
+
+  Int_t Nmu = gmt_ -> N;
+  if(Nmu < 1) return;
+
+  Float_t muptmax = -10.;
+
+  for(Int_t imu=0; imu < Nmu; imu++) { 
+    Int_t bx = gmt_ -> CandBx[imu];		
+    if(bx != 0) continue;
+    Float_t pt = gmt_ -> Pt[imu];			
+    Float_t eta = gmt_  -> Eta[imu];        
+    if(fabs(eta) > 2.1) continue;
+    if(pt >= muptmax) muptmax = pt;
+  }
+
+  mucut = muptmax;
+
+  Float_t adcETM = gt_->RankETM ;
+  Float_t TheETM = adcETM/2.;
+  ETMcut = TheETM;
+
+  Float_t jetptmax = -10.;
+  Int_t Nj = gt_ -> Njet ;
+  for(Int_t ue=0; ue < Nj; ue++) {
+    Int_t bx = gt_ -> Bxjet[ue];        		
+    if(bx != 0) continue;
+    Bool_t isFwdJet = gt_ -> Fwdjet[ue];
+    if(isFwdJet) continue;
+    if(NOTauInJets && gt_->Taujet[ue]) continue;
+    if(noHF && (gt_->Etajet[ue] < 5 || gt_->Etajet[ue] > 17)) continue;
+
+    Float_t rank = gt_ -> Rankjet[ue];
+    Float_t pt = CorrectedL1JetPtByGCTregions(gt_->Etajet[ue],rank*4.);
+    if(pt >= jetptmax) jetptmax = pt;
+  }
+
+  jetcut = jetptmax;
+
+  return;
+}
 
 #endif
