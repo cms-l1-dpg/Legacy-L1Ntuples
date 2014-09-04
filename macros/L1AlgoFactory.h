@@ -58,10 +58,12 @@ class L1AlgoFactory{
   void QuadJetCentral_TauJetPt(Float_t& jetcut, Float_t& taucut);
   void DoubleJetC_deltaPhi7_HTTPt(Float_t& jetcut, Float_t& httcut);
 
-  void ETMVal(Float_t& ETMcut );
-  void HTTVal(Float_t& HTTcut );
-  void HTMVal(Float_t& HTMcut );
-  void ETTVal(Float_t& ETTcut );
+  void ETMVal(Float_t& ETMcut);
+  void HTTVal(Float_t& HTTcut);
+  void HTMVal(Float_t& HTMcut);
+  void ETTVal(Float_t& ETTcut);
+
+  void ETMVal_NoQCD(Float_t& ETMcut);
 
   Bool_t SingleMu(Float_t ptcut, Int_t qualmin=4);
   Bool_t SingleMuEta2p1(Float_t ptcut);
@@ -84,10 +86,12 @@ class L1AlgoFactory{
   Bool_t TripleJetCentral(Float_t cut1, Float_t cut2, Float_t cut3);
   Bool_t QuadJet(Float_t cut1, Float_t cut2, Float_t cut3, Float_t cut4, Bool_t isCentral);
 
-  Bool_t ETM(Float_t ETMcut );
-  Bool_t HTT(Float_t HTTcut );
-  Bool_t HTM(Float_t HTMcut );
-  Bool_t ETT(Float_t ETTcut );
+  Bool_t ETM(Float_t ETMcut);
+  Bool_t HTT(Float_t HTTcut);
+  Bool_t HTM(Float_t HTMcut);
+  Bool_t ETT(Float_t ETTcut);
+
+  Bool_t ETM_NoQCD(Float_t ETMcut);
 
   Bool_t Mu_EG(Float_t mucut, Float_t EGcut, Bool_t isIsolated = false, Int_t qualmin=4);
   Bool_t DoubleMu_EG(Float_t mucut, Float_t EGcut );
@@ -321,6 +325,13 @@ Bool_t L1AlgoFactory::ETT(Float_t ETTcut) {
   Float_t tmp_cut = -10.;
   ETTVal(tmp_cut);
   if(tmp_cut >= ETTcut) return true;
+  return false;
+}
+
+Bool_t L1AlgoFactory::ETM_NoQCD(Float_t ETMcut) {
+  Float_t tmp_cut = -10.;
+  ETMVal_NoQCD(tmp_cut);
+  if(tmp_cut >= ETMcut) return true;
   return false;
 }
 
@@ -1349,6 +1360,33 @@ void L1AlgoFactory::ETTVal(Float_t& ETTcut) {
   Float_t adc = gt_->RankETT;
   Float_t TheETT = adc/2.;
   ETTcut = TheETT;
+  return;
+}
+
+void L1AlgoFactory::ETMVal_NoQCD(Float_t& ETMcut ) {
+
+  Float_t adc = gt_->RankETM;
+  Float_t TheETM = adc/2.;
+
+  Float_t ETM_Phi = gt_->PhiETM;
+
+  Int_t Nj = gt_ -> Njet ;
+  for(Int_t ue=0; ue < Nj; ue++) {
+    Int_t bx = gt_ -> Bxjet[ue];        		
+    if(bx != 0) continue;
+    if(gt_->Taujet[ue]) continue;
+
+    Float_t rank = gt_ -> Rankjet[ue];
+    Float_t pt = CorrectedL1JetPtByGCTregions(gt_->Etajet[ue],rank*4.);
+    if(pt < 50.) continue;
+
+    Float_t phijet = gt_->Phijet[ue];
+
+    if(correlateInPhi(phijet,ETM_Phi,3)) return;
+  }
+
+  ETMcut = TheETM;
+
   return;
 }
 
