@@ -1378,7 +1378,7 @@ void L1AlgoFactory::ETMVal_NoQCD(Float_t& ETMcut ) {
 
     Float_t rank = gt_ -> Rankjet[ue];
     Float_t pt = CorrectedL1JetPtByGCTregions(gt_->Etajet[ue],rank*4.);
-    if(pt < 50.) continue;
+    if(pt < 52.) continue;
 
     Float_t phijet = gt_->Phijet[ue];
 
@@ -2104,6 +2104,8 @@ void L1AlgoFactory::Muer_ETM_HTTPt(Float_t& mucut, Float_t& ETMcut, Float_t& HTT
     Float_t pt = gmt_ -> Pt[imu];			
     Float_t eta = gmt_  -> Eta[imu];        
     if(fabs(eta) > 2.1) continue;
+    Int_t qual = gmt_->Qual[imu];        
+    if(qual < 4) continue;
     if(pt >= ptmax) ptmax = pt;
   }
 
@@ -2133,6 +2135,8 @@ void L1AlgoFactory::Muer_ETM_JetCPt(Float_t& mucut, Float_t& ETMcut, Float_t& je
     Float_t pt = gmt_ -> Pt[imu];			
     Float_t eta = gmt_  -> Eta[imu];        
     if(fabs(eta) > 2.1) continue;
+    Int_t qual = gmt_->Qual[imu];        
+    if(qual < 4) continue;
     if(pt >= muptmax) muptmax = pt;
   }
 
