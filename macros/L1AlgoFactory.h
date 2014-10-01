@@ -36,7 +36,7 @@ class L1AlgoFactory{
   void QuadJetPt(Float_t& cut1, Float_t& cut2, Float_t& cut3, Float_t& cut4, Bool_t isCentral = false);
 
   void Mu_EGPt(Float_t& mucut, Float_t& EGcut, Bool_t isIsolated = false, Int_t qualmin=4);
-  void DoubleMu_EGPt(Float_t& mucut, Float_t& EGcut );
+  void DoubleMu_EGPt(Float_t& mucut, Float_t& EGcut, Bool_t isMuHighQual = false );
   void Mu_DoubleEGPt(Float_t& mucut, Float_t& EGcut );
 
   void Muer_JetCentralPt(Float_t& mucut, Float_t& jetcut);
@@ -94,8 +94,8 @@ class L1AlgoFactory{
   Bool_t ETM_NoQCD(Float_t ETMcut);
 
   Bool_t Mu_EG(Float_t mucut, Float_t EGcut, Bool_t isIsolated = false, Int_t qualmin=4);
-  Bool_t DoubleMu_EG(Float_t mucut, Float_t EGcut );
-  Bool_t Mu_DoubleEG(Float_t mucut, Float_t EGcut );
+  Bool_t DoubleMu_EG(Float_t mucut, Float_t EGcut, Bool_t isMuHighQual = false);
+  Bool_t Mu_DoubleEG(Float_t mucut, Float_t EGcut);
 
   Bool_t Muer_JetCentral(Float_t mucut, Float_t jetcut);
   Bool_t Mu_JetCentral_delta(Float_t mucut, Float_t jetcut);
@@ -343,10 +343,10 @@ Bool_t L1AlgoFactory::Mu_EG(Float_t mucut, Float_t EGcut, Bool_t isIsolated, Int
   return false;
 }
 
-Bool_t L1AlgoFactory::DoubleMu_EG(Float_t mucut, Float_t EGcut) {
+Bool_t L1AlgoFactory::DoubleMu_EG(Float_t mucut, Float_t EGcut, Bool_t isMuHighQual) {
   Float_t tmp_mucut = -10.;
   Float_t tmp_elecut = -10.;
-  DoubleMu_EGPt(tmp_mucut,tmp_elecut);
+  DoubleMu_EGPt(tmp_mucut,tmp_elecut,isMuHighQual);
   if(tmp_mucut >= mucut && tmp_elecut >= EGcut) return true;
   return false;
 }
@@ -1258,6 +1258,8 @@ Bool_t L1AlgoFactory::TripleJet_VBF(Float_t jet1, Float_t jet2, Float_t jet3 ) {
   for (Int_t ue=0; ue < Nj; ue++) {
     Int_t bx = gt_ -> Bxjet[ue];        		
     if (bx != 0) continue;
+    if(NOTauInJets && gt_->Taujet[ue]) continue;
+
     Bool_t isFwdJet = gt_ -> Fwdjet[ue];
     Float_t rank = gt_ -> Rankjet[ue];
     Float_t pt = CorrectedL1JetPtByGCTregions(gt_->Etajet[ue],rank*4.);
@@ -1424,7 +1426,7 @@ void L1AlgoFactory::Mu_EGPt(Float_t& mucut, Float_t& EGcut, Bool_t isIsolated, I
 }
 
 
-void L1AlgoFactory::DoubleMu_EGPt(Float_t& mucut, Float_t& EGcut ) {
+void L1AlgoFactory::DoubleMu_EGPt(Float_t& mucut, Float_t& EGcut, Bool_t isMuHighQual ) {
 
   Float_t muptmax = -10.;
   Float_t second_muptmax = -10.;
@@ -1439,6 +1441,7 @@ void L1AlgoFactory::DoubleMu_EGPt(Float_t& mucut, Float_t& EGcut ) {
     Float_t pt = gmt_ -> Pt[imu];			
     Int_t qual = gmt_ -> Qual[imu];        
     if(qual < 4 && qual !=3 ) continue;
+    if(isMuHighQual && qual < 4) continue;
     if(pt >= muptmax){
       second_muptmax = muptmax;
       muptmax = pt;
