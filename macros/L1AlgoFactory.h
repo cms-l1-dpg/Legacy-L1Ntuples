@@ -51,8 +51,11 @@ class L1AlgoFactory{
   void SingleIsoEG_Eta2p1_ETMPt(Float_t& egcut, Float_t& ETMcut);
   void EG_FwdJetPt(Float_t& EGcut, Float_t& FWcut);
   void EG_DoubleJetCentralPt(Float_t& EGcut, Float_t& jetcut);
+  void EGer_TripleJetCentralPt(Float_t& EGcut, Float_t& jetcut);
   void DoubleEG_HTPt(Float_t& EGcut, Float_t& HTcut);
   void IsoEGer_TauJetEta2p17Pt(Float_t& egcut, Float_t& taucut);
+  void Jet_MuOpen_Mu_dPhiMuMu1Pt(Float_t& jetcut, Float_t& mucut);
+  void Jet_MuOpen_EG_dPhiMuEG1Pt(Float_t& jetcut, Float_t& egcut);
 
   void DoubleJetCentral_ETMPt(Float_t& jetcut1, Float_t& jetcut2, Float_t& ETMcut);
   void QuadJetCentral_TauJetPt(Float_t& jetcut, Float_t& taucut);
@@ -109,8 +112,11 @@ class L1AlgoFactory{
   Bool_t SingleIsoEG_Eta2p1_ETM(Float_t egcut, Float_t ETMcut);
   Bool_t EG_FwdJet(Float_t EGcut, Float_t FWcut);
   Bool_t EG_DoubleJetCentral(Float_t EGcut, Float_t jetcut);
+  Bool_t EGer_TripleJetCentral(Float_t EGcut, Float_t jetcut);
   Bool_t DoubleEG_HT(Float_t EGcut, Float_t HTcut);
   Bool_t IsoEGer_TauJetEta2p17(Float_t egcut, Float_t taucut);
+  Bool_t Jet_MuOpen_Mu_dPhiMuMu1(Float_t jetcut, Float_t mucut);
+  Bool_t Jet_MuOpen_EG_dPhiMuEG1(Float_t jetcut, Float_t egcut);
 
   Bool_t DoubleJetCentral_ETM(Float_t jetcut1, Float_t jetcut2, Float_t ETMcut);
   Bool_t QuadJetCentral_TauJet(Float_t jetcut, Float_t taucut);
@@ -423,11 +429,35 @@ Bool_t L1AlgoFactory::EG_DoubleJetCentral(Float_t egcut, Float_t jetcut) {
   return false;
 }
 
+Bool_t L1AlgoFactory::EGer_TripleJetCentral(Float_t egcut, Float_t jetcut) {
+  Float_t tmp_egcut = -10.;
+  Float_t tmp_jetcut = -10.;
+  EGer_TripleJetCentralPt(tmp_egcut,tmp_jetcut);
+  if(tmp_egcut >= egcut && tmp_jetcut >= jetcut) return true;
+  return false;
+}
+
 Bool_t L1AlgoFactory::DoubleEG_HT(Float_t egcut, Float_t HTcut) {
   Float_t tmp_egcut = -10.;
   Float_t tmp_HTcut = -10.;
   DoubleEG_HTPt(tmp_egcut,tmp_HTcut);
   if(tmp_egcut >= egcut && tmp_HTcut >= HTcut) return true;
+  return false;
+}
+
+Bool_t L1AlgoFactory::Jet_MuOpen_Mu_dPhiMuMu1(Float_t jetcut, Float_t mucut) {
+  Float_t tmp_jetcut = -10.;
+  Float_t tmp_mucut = -10.;
+  Jet_MuOpen_Mu_dPhiMuMu1Pt(tmp_jetcut,tmp_mucut);
+  if(tmp_jetcut >= jetcut && tmp_mucut >= mucut) return true;
+  return false;
+}
+
+Bool_t L1AlgoFactory::Jet_MuOpen_EG_dPhiMuEG1(Float_t jetcut, Float_t egcut) {
+  Float_t tmp_jetcut = -10.;
+  Float_t tmp_egcut = -10.;
+  Jet_MuOpen_EG_dPhiMuEG1Pt(tmp_jetcut,tmp_egcut);
+  if(tmp_jetcut >= jetcut && tmp_egcut >= egcut) return true;
   return false;
 }
 
@@ -1174,7 +1204,7 @@ void L1AlgoFactory::DoubleTauJetEta2p17Pt(Float_t& cut1, Float_t& cut2) {
     Int_t bx = gt_ -> Bxjet[ue];        		
     if(bx != 0) continue; 
     Bool_t isTauJet = gt_ -> Taujet[ue];
-    if(! isTauJet) continue;
+    if(!isTauJet) continue;
     Float_t rank = gt_ -> Rankjet[ue];    // the rank of the electron
     Float_t pt = CorrectedL1JetPtByGCTregions(gt_->Etajet[ue],rank*4.);
     Float_t eta = gt_ -> Etajet[ue];
@@ -1806,6 +1836,64 @@ void L1AlgoFactory::EG_DoubleJetCentralPt(Float_t& EGcut, Float_t& jetcut) {
   return;
 }
 
+void L1AlgoFactory::EGer_TripleJetCentralPt(Float_t& EGcut, Float_t& jetcut) {
+
+  Float_t eleptmax = -10.;
+  Float_t elemaxeta = -10.;
+  Float_t jetptmax1 = -10.;
+  Float_t jetptmax2 = -10.;
+  Float_t jetptmax3 = -10.;
+
+  Int_t Nele = gt_ -> Nele;
+  for (Int_t ue=0; ue < Nele; ue++){
+    Int_t bx = gt_ -> Bxel[ue];        		
+    if(bx != 0) continue;
+    Float_t eta = gt_ -> Etael[ue];
+    if(eta < 4.5 || eta > 16.5) continue;  // eta = 5 - 16
+    Float_t pt = gt_ -> Rankel[ue];    // the rank of the electron
+    if(pt >= eleptmax){
+      eleptmax = pt; 
+      elemaxeta = gt_->Etael[ue];
+    }
+  }  // end loop over EM objects
+
+  Int_t Nj = gt_ -> Njet ;
+  if(Nj < 3) return;
+
+  for (Int_t ue=0; ue < Nj; ue++) {
+    Int_t bx = gt_ -> Bxjet[ue];        		
+    if (bx != 0) continue;
+    Bool_t isFwdJet = gt_ -> Fwdjet[ue];
+    if (isFwdJet) continue;
+    if(NOTauInJets && gt_->Taujet[ue]) continue;
+    if(noHF && (gt_->Etajet[ue] < 5 || gt_->Etajet[ue] > 17)) continue;
+
+    Float_t rank = gt_ -> Rankjet[ue];
+    Float_t pt = CorrectedL1JetPtByGCTregions(gt_->Etajet[ue],rank*4.);
+    Float_t jeteta = gt_->Etajet[ue];
+    if(jeteta == elemaxeta) continue;   //both are binned with the same binning
+
+    if(pt >= jetptmax1){
+      jetptmax3 = jetptmax2;
+      jetptmax2 = jetptmax1;
+      jetptmax1 = pt;
+    }
+    else if(pt >= jetptmax2){
+      jetptmax3 = jetptmax2;
+      jetptmax2 = pt;
+    }
+    else if(pt >= jetptmax3) jetptmax3 = pt;
+
+  }
+
+  if(eleptmax >= 0. && jetptmax3 >= 0.){
+    EGcut = eleptmax;
+    jetcut = jetptmax3;
+  }
+
+  return;
+}
+
 void L1AlgoFactory::DoubleEG_HTPt(Float_t& EGcut, Float_t& HTcut) {
 
   Float_t eleptmax1  = -10.;
@@ -1840,6 +1928,158 @@ void L1AlgoFactory::DoubleEG_HTPt(Float_t& EGcut, Float_t& HTcut) {
   if(eleptmax2 >= 0.){
     EGcut = eleptmax2;
     HTcut = TheHTT;
+  }
+
+  return;
+}
+
+void L1AlgoFactory::Jet_MuOpen_Mu_dPhiMuMu1Pt(Float_t& jetcut, Float_t& mucut) {
+
+  //Find the highest pt jet with deltaphi condition
+  Float_t jetptmax = -10.;
+  Int_t Nj = gt_ -> Njet ;
+  Int_t Nmu = gmt_ -> N;
+  for(Int_t ue=0; ue < Nj; ue++){
+    Int_t bxjet = gt_ -> Bxjet[ue];        		
+    if(bxjet != 0) continue;
+    if(NOTauInJets && gt_->Taujet[ue]) continue;
+    Float_t rank = gt_ -> Rankjet[ue];
+    Float_t pt = CorrectedL1JetPtByGCTregions(gt_->Etajet[ue],rank*4.);
+    if(pt < jetptmax) continue;
+    Float_t phijet = gt_->Phijet[ue];
+
+    Bool_t corr = false;
+
+    for(Int_t imu=0; imu < Nmu; imu++){
+      Int_t bx = gmt_ -> CandBx[imu];		
+      if (bx != 0) continue;
+      Int_t qual = gmt_ -> Qual[imu];        
+      if(qual < 5 && qual != 3 ) continue; //The muon can be of lower quality
+      if(gmt_->Pt[imu] < 0.) continue;
+      Float_t muphi = phiINjetCoord(gmt_->Phi[imu]);
+      if(fabs(muphi-phijet) < 3.) corr = true;
+    }
+
+    if(corr) jetptmax = pt;
+  }
+
+  //Loop over the muons list twice and save all pairs that satisfy the deltaphi veto
+  Bool_t corr = false;
+  Float_t maxpt1 = -10.;
+  Float_t maxpt2 = -10.;
+
+  std::vector<std::pair<Float_t,Float_t> > muonPairs;
+  for (Int_t imu=0; imu < Nmu; imu++) {
+    Int_t bx = gmt_ -> CandBx[imu];		
+    if (bx != 0) continue;
+    Float_t pt = gmt_ -> Pt[imu];			
+    Int_t qual = gmt_ -> Qual[imu];        
+    if ( qual < 4) continue;   //one muon has SingleMu quality
+    Float_t phi1 = gmt_->Phi[imu];        
+
+    for (Int_t imu2=0; imu2 < Nmu; imu2++) {
+      if (imu2 == imu) continue;
+      Int_t bx2 = gmt_ -> CandBx[imu2];		
+      if (bx2 != 0) continue;
+      Float_t pt2 = gmt_ -> Pt[imu2];			
+      Int_t qual2 = gmt_ -> Qual[imu2];        
+      if(qual2 < 5 && qual != 3 ) continue; //The other muon can be of lower quality
+      Float_t phi2 = gmt_->Phi[imu2];        
+
+      Float_t dphi = phi1 - phi2; //Should get the binning, but for GMT is quite fine
+      if(fabs(dphi) > 1.){
+	corr = true;
+	muonPairs.push_back(std::pair<Float_t,Float_t>(pt,pt2));
+      }
+
+    }
+  }
+
+  //Select the muon pair in which one of the two muons is the highest pt muon satisfying the deltaphi veto
+  if(corr){
+    std::vector<std::pair<Float_t,Float_t> >::const_iterator muonPairIt  = muonPairs.begin();
+    std::vector<std::pair<Float_t,Float_t> >::const_iterator muonPairEnd = muonPairs.end();
+    for(; muonPairIt != muonPairEnd; ++muonPairIt){
+      Float_t pt1 = muonPairIt->first;
+      Float_t pt2 = muonPairIt->second;
+      
+      if(pt1 > maxpt1 || (fabs(maxpt1-pt1)<10E-2 && pt2>maxpt2) ) {
+	maxpt1 = pt1;
+	maxpt2 = pt2;
+      }
+    }
+  }
+
+  Float_t maxptmu = maxpt1 > maxpt2 ? maxpt1 : maxpt2; //only the highest pt muon counts for the correlation, the second muon is Open
+
+  if(jetptmax > 0. && maxptmu > 0.){
+    jetcut = jetptmax;
+    mucut = maxptmu;
+  }
+
+  return;
+}
+
+void L1AlgoFactory::Jet_MuOpen_EG_dPhiMuEG1Pt(Float_t& jetcut, Float_t& egcut){
+
+  //Find the highest pt jet with deltaphi condition with MuOpen
+  Float_t jetptmax = -10.;
+  Int_t Nj = gt_ -> Njet ;
+  Int_t Nmu = gmt_ -> N;
+  for(Int_t ue=0; ue < Nj; ue++){
+    Int_t bxjet = gt_ -> Bxjet[ue];        		
+    if(bxjet != 0) continue;
+    if(NOTauInJets && gt_->Taujet[ue]) continue;
+    Float_t rank = gt_ -> Rankjet[ue];
+    Float_t pt = CorrectedL1JetPtByGCTregions(gt_->Etajet[ue],rank*4.);
+    if(pt < jetptmax) continue;
+    Float_t phijet = gt_->Phijet[ue];
+
+    Bool_t corr = false;
+
+    //Loop over all muons to check if a MuOpen is within 2 calo phi bins
+    for(Int_t imu=0; imu < Nmu; imu++){
+      Int_t bx = gmt_ -> CandBx[imu];		
+      if (bx != 0) continue;
+      Int_t qual = gmt_ -> Qual[imu];        
+      if(qual < 5 && qual != 3) continue; //The muon can be of lower quality
+      if(gmt_->Pt[imu] < 0.) continue;
+      Float_t muphi = phiINjetCoord(gmt_->Phi[imu]);
+      if(fabs(muphi-phijet) < 3.) corr = true;
+    }
+
+    if(corr) jetptmax = pt;
+  }
+
+  //Loop over electrons, and save all the electrons which satisfy the deltaphi veto with a MuOpen
+  Int_t Nele = gt_ -> Nele;
+  Float_t maxptEG = -10.;
+  for(Int_t ue=0; ue < Nele; ue++){     
+    Int_t bxele = gt_->Bxel[ue];        		
+    if(bxele != 0) continue;
+    Float_t pt = gt_->Rankel[ue]; // the rank of the electron
+    Float_t EGphi = gt_->Phiel[ue];
+    if(pt < maxptEG) continue;
+
+    //Check the deltaphi veto with any muon
+    Bool_t corr = false;
+    for(Int_t imu=0; imu < Nmu; imu++) {
+      Int_t bxmu = gmt_ -> CandBx[imu];		
+      if(bxmu != 0) continue;
+      Int_t qual = gmt_ -> Qual[imu];        
+      if(qual < 5 && qual != 3) continue;
+      if(gmt_->Pt[imu] < 0.) continue;
+      Float_t muphi = phiINjetCoord(gmt_->Phi[imu]);
+
+      if(fabs(muphi-EGphi) > 3.) corr = true;
+    }
+
+    if(corr) maxptEG = pt;
+  }
+
+  if(jetptmax > 0. && maxptEG > 0.){
+    jetcut = jetptmax;
+    egcut = maxptEG;
   }
 
   return;
