@@ -48,7 +48,7 @@ class L1AlgoFactory{
   void Muer_ETM_HTTPt(Float_t& mucut, Float_t& ETMcut, Float_t& HTTcut);
   void Muer_ETM_JetCPt(Float_t& mucut, Float_t& ETMcut, Float_t& jetcut);
 
-  void SingleIsoEG_Eta2p1_ETMPt(Float_t& egcut, Float_t& ETMcut);
+  void SingleEG_Eta2p1_HTTPt(Float_t& egcut, Float_t& HTTcut, Bool_t isIsolated = false);
   void EG_FwdJetPt(Float_t& EGcut, Float_t& FWcut);
   void EG_DoubleJetCentralPt(Float_t& EGcut, Float_t& jetcut);
   void EGer_TripleJetCentralPt(Float_t& EGcut, Float_t& jetcut);
@@ -65,7 +65,6 @@ class L1AlgoFactory{
   void HTTVal(Float_t& HTTcut);
   void HTMVal(Float_t& HTMcut);
   void ETTVal(Float_t& ETTcut);
-
   void ETMVal_NoQCD(Float_t& ETMcut);
 
   Bool_t SingleMu(Float_t ptcut, Int_t qualmin=4);
@@ -93,7 +92,6 @@ class L1AlgoFactory{
   Bool_t HTT(Float_t HTTcut);
   Bool_t HTM(Float_t HTMcut);
   Bool_t ETT(Float_t ETTcut);
-
   Bool_t ETM_NoQCD(Float_t ETMcut);
 
   Bool_t Mu_EG(Float_t mucut, Float_t EGcut, Bool_t isIsolated = false, Int_t qualmin=4);
@@ -109,7 +107,7 @@ class L1AlgoFactory{
   Bool_t Muer_ETM_HTT(Float_t mucut, Float_t ETMcut, Float_t HTTcut);
   Bool_t Muer_ETM_JetC(Float_t mucut, Float_t ETMcut, Float_t jetcut);
 
-  Bool_t SingleIsoEG_Eta2p1_ETM(Float_t egcut, Float_t ETMcut);
+  Bool_t SingleEG_Eta2p1_HTT(Float_t egcut, Float_t HTTcut, Bool_t isIsolated = false);
   Bool_t EG_FwdJet(Float_t EGcut, Float_t FWcut);
   Bool_t EG_DoubleJetCentral(Float_t EGcut, Float_t jetcut);
   Bool_t EGer_TripleJetCentral(Float_t EGcut, Float_t jetcut);
@@ -405,11 +403,11 @@ Bool_t L1AlgoFactory::Muer_ETM(Float_t mucut, Float_t ETMcut) {
   return false;
 }
 
-Bool_t L1AlgoFactory::SingleIsoEG_Eta2p1_ETM(Float_t egcut, Float_t ETMcut) {
+Bool_t L1AlgoFactory::SingleEG_Eta2p1_HTT(Float_t egcut, Float_t HTTcut, Bool_t isIsolated) {
   Float_t tmp_egcut = -10.;
-  Float_t tmp_ETMcut = -10.;
-  SingleIsoEG_Eta2p1_ETMPt(tmp_egcut,tmp_ETMcut);
-  if(tmp_egcut >= egcut && tmp_ETMcut >= ETMcut) return true;
+  Float_t tmp_HTTcut = -10.;
+  SingleEG_Eta2p1_HTTPt(tmp_egcut,tmp_HTTcut,isIsolated);
+  if(tmp_egcut >= egcut && tmp_HTTcut >= HTTcut) return true;
   return false;
 }
 
@@ -1733,7 +1731,7 @@ void L1AlgoFactory::Muer_ETMPt(Float_t& mucut, Float_t& ETMcut ) {
   return;
 }
 
-void L1AlgoFactory::SingleIsoEG_Eta2p1_ETMPt(Float_t& egcut, Float_t& ETMcut) {
+void L1AlgoFactory::SingleEG_Eta2p1_HTTPt(Float_t& egcut, Float_t& HTTcut, Bool_t isIsolated) {
 
   Float_t eleptmax = -10.;
 
@@ -1742,19 +1740,19 @@ void L1AlgoFactory::SingleIsoEG_Eta2p1_ETMPt(Float_t& egcut, Float_t& ETMcut) {
     Int_t bx = gt_ -> Bxel[ue];        		
     if(bx != 0) continue;
     Bool_t iso = gt_ -> Isoel[ue];
-    if(! iso) continue;
+    if(isIsolated && !iso) continue;
     Float_t eta = gt_ -> Etael[ue];
     if(eta < 4.5 || eta > 16.5) continue;  // eta = 5 - 16
     Float_t pt = gt_->Rankel[ue];
     if(pt >= eleptmax) eleptmax = pt;
   }
 
-  Float_t adc = gt_ -> RankETM ;
-  Float_t TheETM = adc/2.;
+  Float_t adc = gt_ -> RankHTT ;
+  Float_t TheHTT = adc/2.;
 
   if(eleptmax >= 0.){
     egcut = eleptmax;
-    ETMcut = TheETM;
+    HTTcut = TheHTT;
   }
 
   return;
