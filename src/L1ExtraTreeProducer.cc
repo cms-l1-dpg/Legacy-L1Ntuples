@@ -83,6 +83,7 @@ private:
   edm::InputTag nonIsoEmLabel_;
   edm::InputTag isoEmLabel_;
   edm::InputTag tauJetLabel_;
+  edm::InputTag isoTauJetLabel_;
   edm::InputTag cenJetLabel_;
   edm::InputTag fwdJetLabel_;
   edm::InputTag muonLabel_;
@@ -105,6 +106,8 @@ L1ExtraTreeProducer::L1ExtraTreeProducer(const edm::ParameterSet& iConfig):
 1extraParticles:Isolated"))),
   tauJetLabel_(iConfig.getUntrackedParameter("tauJetLabel",edm::InputTag("l\
 1extraParticles:Tau"))),
+  isoTauJetLabel_(iConfig.getUntrackedParameter("isoTauJetLabel",edm::InputTag("l\
+1extraParticles:IsoTau"))),
   cenJetLabel_(iConfig.getUntrackedParameter("cenJetLabel",edm::InputTag("l\
 1extraParticles:Central"))),
   fwdJetLabel_(iConfig.getUntrackedParameter("fwdJetLabel",edm::InputTag("l\
@@ -155,6 +158,7 @@ L1ExtraTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
   edm::Handle<l1extra::L1JetParticleCollection> cenJet;
   edm::Handle<l1extra::L1JetParticleCollection> fwdJet;
   edm::Handle<l1extra::L1JetParticleCollection> tauJet;
+  edm::Handle<l1extra::L1JetParticleCollection> isoTauJet;
   edm::Handle<l1extra::L1MuonParticleCollection> muon; ;
   edm::Handle<l1extra::L1EtMissParticleCollection> mets;
   edm::Handle<l1extra::L1EtMissParticleCollection> mhts;
@@ -163,6 +167,7 @@ L1ExtraTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
   iEvent.getByLabel(nonIsoEmLabel_, nonIsoEm);
   iEvent.getByLabel(isoEmLabel_, isoEm);
   iEvent.getByLabel(tauJetLabel_, tauJet);
+  iEvent.getByLabel(isoTauJetLabel_, isoTauJet);
   iEvent.getByLabel(cenJetLabel_, cenJet);
   iEvent.getByLabel(fwdJetLabel_, fwdJet);
   iEvent.getByLabel(muonLabel_, muon);
@@ -192,6 +197,12 @@ L1ExtraTreeProducer::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
     l1Extra->SetTauJet(tauJet, maxL1Extra_);
   } else {
     edm::LogWarning("MissingProduct") << "L1Extra Tau Jets not found. Branch will not be filled" << std::endl;
+  }
+
+  if (isoTauJet.isValid()){ 
+    l1Extra->SetIsoTauJet(isoTauJet, maxL1Extra_);
+  } else {
+    edm::LogWarning("MissingProduct") << "L1Extra Iso Tau Jets not found. Branch will not be filled" << std::endl;
   }
 
   if (fwdJet.isValid()){ 

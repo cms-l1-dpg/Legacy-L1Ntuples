@@ -77,6 +77,20 @@ void L1Analysis::L1AnalysisL1Extra::SetTauJet(const edm::Handle<l1extra::L1JetPa
     }
 }
 
+void L1Analysis::L1AnalysisL1Extra::SetIsoTauJet(const edm::Handle<l1extra::L1JetParticleCollection> isoTauJet, unsigned maxL1Extra)
+{
+  // std::cout << "Filling L1 Extra isoTauJets" << std::endl;      
+   for(l1extra::L1JetParticleCollection::const_iterator it=isoTauJet->begin(); it!=isoTauJet->end() && l1extra_.nIsoTauJets<maxL1Extra; it++){
+      
+     // printf("L1isoTauJet (et,eta,phi,bx,) (%f,%f,%f,%d)\n",it->et(),it->eta(),it->phi(),it->bx() );
+      l1extra_.isoTauJetEt .push_back(it->et());
+      l1extra_.isoTauJetEta.push_back(it->eta());
+      l1extra_.isoTauJetPhi.push_back(it->phi());
+      l1extra_.isoTauJetBx .push_back(it->bx());
+      l1extra_.nIsoTauJets++;
+    }
+}
+
 
 void L1Analysis::L1AnalysisL1Extra::SetMuon(const edm::Handle<l1extra::L1MuonParticleCollection> muon, unsigned maxL1Extra)
 {

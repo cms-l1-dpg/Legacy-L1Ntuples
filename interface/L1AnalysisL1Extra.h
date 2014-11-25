@@ -35,6 +35,7 @@ namespace L1Analysis
     void SetCenJet  (const edm::Handle<l1extra::L1JetParticleCollection>    cenJet,   unsigned maxL1Extra);
     void SetFwdJet  (const edm::Handle<l1extra::L1JetParticleCollection>    fwdJet,   unsigned maxL1Extra);
     void SetTauJet  (const edm::Handle<l1extra::L1JetParticleCollection>    tauJet,   unsigned maxL1Extra);
+    void SetIsoTauJet(const edm::Handle<l1extra::L1JetParticleCollection>   isoTauJet,unsigned maxL1Extra);
     void SetMuon    (const edm::Handle<l1extra::L1MuonParticleCollection>   muon,     unsigned maxL1Extra);
     void SetMet     (const edm::Handle<l1extra::L1EtMissParticleCollection> mets);
     void SetMht     (const edm::Handle<l1extra::L1EtMissParticleCollection> mhts);

@@ -50,6 +50,12 @@ namespace L1Analysis
       tauJetPhi.clear(); 
       tauJetBx.clear();
 
+      nIsoTauJets = 0;
+      isoTauJetEt.clear();
+      isoTauJetEta.clear();
+      isoTauJetPhi.clear(); 
+      isoTauJetBx.clear();
+
       nMuons = 0;
       muonEt.clear();
       muonEta.clear();
@@ -109,6 +115,12 @@ namespace L1Analysis
     std::vector<double> tauJetEta;
     std::vector<double> tauJetPhi;
     std::vector<int>    tauJetBx;
+
+    unsigned int nIsoTauJets;
+    std::vector<double> isoTauJetEt;
+    std::vector<double> isoTauJetEta;
+    std::vector<double> isoTauJetPhi;
+    std::vector<int>    isoTauJetBx;
 
     unsigned int nMuons;
     std::vector<double>   muonEt;
