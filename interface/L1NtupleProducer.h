@@ -137,6 +137,7 @@ class L1NtupleProducer : public edm::EDAnalyzer {
       edm::InputTag gctCenJetsSource_ ;
       edm::InputTag gctForJetsSource_ ;
       edm::InputTag gctTauJetsSource_ ;
+      edm::InputTag gctIsoTauJetsSource_ ;
       edm::InputTag gctEnergySumsSource_;
       edm::InputTag gctIsoEmSource_ ;
       edm::InputTag gctNonIsoEmSource_ ;   

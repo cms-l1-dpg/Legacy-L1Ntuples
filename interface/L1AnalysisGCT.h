@@ -25,7 +25,8 @@ namespace L1Analysis
     
     void SetJet(const edm::Handle < L1GctJetCandCollection > l1CenJets,
                 const edm::Handle < L1GctJetCandCollection > l1ForJets,
-                const edm::Handle < L1GctJetCandCollection > l1TauJets);
+		const edm::Handle < L1GctJetCandCollection > l1TauJets,
+                const edm::Handle < L1GctJetCandCollection > l1IsoTauJets);
 		
     void SetES(const edm::Handle < L1GctEtMissCollection > l1EtMiss, const edm::Handle < L1GctHtMissCollection >  l1HtMiss,
                const edm::Handle < L1GctEtHadCollection > l1EtHad, const edm::Handle < L1GctEtTotalCollection > l1EtTotal); 	   

@@ -16,6 +16,7 @@ l1NtupleProducer = cms.EDAnalyzer("L1NtupleProducer",
     gctIsoEmSource       = cms.InputTag("gctDigis","isoEm"),
     gctEnergySumsSource  = cms.InputTag("gctDigis",""),
     gctTauJetsSource     = cms.InputTag("gctDigis","tauJets"),
+    gctIsoTauJetsSource  = cms.InputTag("gctDigis","isoTauJets"),  ## replace "gctDigis" with "none" when running Legacy to avoid annoying warning messages
     rctSource            = cms.InputTag("gctDigis"),
     dttfSource           = cms.InputTag("dttfDigis"),
     ecalSource           = cms.InputTag("ecalDigis:EcalTriggerPrimitives"),

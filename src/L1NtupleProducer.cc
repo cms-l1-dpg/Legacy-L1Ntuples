@@ -83,6 +83,7 @@ L1NtupleProducer::L1NtupleProducer(const edm::ParameterSet& ps) : csctfPtLUTs_(N
   gctCenJetsSource_    = ps.getParameter<edm::InputTag>("gctCentralJetsSource");
   gctForJetsSource_    = ps.getParameter<edm::InputTag>("gctForwardJetsSource");
   gctTauJetsSource_    = ps.getParameter<edm::InputTag>("gctTauJetsSource");
+  gctIsoTauJetsSource_ = ps.getParameter<edm::InputTag>("gctIsoTauJetsSource");
   gctEnergySumsSource_ = ps.getParameter<edm::InputTag>("gctEnergySumsSource");
   gctIsoEmSource_      = ps.getParameter<edm::InputTag>("gctIsoEmSource");
   gctNonIsoEmSource_   = ps.getParameter<edm::InputTag>("gctNonIsoEmSource");
@@ -400,9 +401,14 @@ void L1NtupleProducer::analyzeGCT(const edm::Event& e)
   e.getByLabel(gctTauJetsSource_, l1TauJets);
   if (!l1TauJets.isValid() && gctTauJetsSource_.label() != "none")  
     edm::LogWarning("DataNotFound") << " Could not find l1TauJets"", label was " << gctTauJetsSource_;
+
+  edm::Handle < L1GctJetCandCollection > l1IsoTauJets;
+  e.getByLabel(gctIsoTauJetsSource_, l1IsoTauJets);
+  if (!l1IsoTauJets.isValid() && gctIsoTauJetsSource_.label() != "none")  
+    edm::LogWarning("DataNotFound") << " Could not find l1IsoTauJets"", label was " << gctIsoTauJetsSource_;
   
   if (l1CenJets.isValid() && l1ForJets.isValid() && l1TauJets.isValid()) 
-    pL1gct->SetJet(l1CenJets, l1ForJets, l1TauJets);
+    pL1gct->SetJet(l1CenJets, l1ForJets, l1TauJets, l1IsoTauJets);
   
   ///
   

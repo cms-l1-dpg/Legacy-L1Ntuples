@@ -23,6 +23,7 @@ namespace L1Analysis
       CJetSize = 0;
       FJetSize = 0;
       TJetSize = 0;
+      IsoTJetSize = 0;
       EtMissSize = 0;
       HtMissSize = 0;
       EtHadSize = 0;
@@ -51,6 +52,10 @@ namespace L1Analysis
       TJetPhi.clear();
       TJetRnk.clear(); 
       TJetBx.clear(); 
+      IsoTJetEta.clear();
+      IsoTJetPhi.clear();
+      IsoTJetRnk.clear(); 
+      IsoTJetBx.clear(); 
       EtMiss.clear();
       EtMissPhi.clear();
       EtMissBX.clear();
@@ -101,6 +106,12 @@ namespace L1Analysis
     std::vector<float> TJetPhi;
     std::vector<float> TJetRnk;
     std::vector<int>   TJetBx;
+
+    int IsoTJetSize;
+    std::vector<float> IsoTJetEta;
+    std::vector<float> IsoTJetPhi;
+    std::vector<float> IsoTJetRnk;
+    std::vector<int>   IsoTJetBx;
     
     int EtMissSize;
     std::vector<float> EtMiss;

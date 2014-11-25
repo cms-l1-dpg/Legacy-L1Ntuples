@@ -16,9 +16,11 @@ L1Analysis::L1AnalysisGCT::~L1AnalysisGCT()
 }
 void L1Analysis::L1AnalysisGCT::SetJet(const edm::Handle < L1GctJetCandCollection > l1CenJets,
                     		       const edm::Handle < L1GctJetCandCollection > l1ForJets,
-                  		       const edm::Handle < L1GctJetCandCollection > l1TauJets)
+                  		       const edm::Handle < L1GctJetCandCollection > l1TauJets,
+                  		       const edm::Handle < L1GctJetCandCollection > l1IsoTauJets)
 {   
-   
+  // std::cout << "L1IsoTauJets valid: " << l1IsoTauJets.isValid() <<std::endl;
+  edm::LogAbsolute("L1") << "CCLA: " << l1IsoTauJets.isValid() <<std::endl;
     // Central jets
     if ( verbose_ ) {
       edm::LogInfo("L1Prompt") << "L1NtupleProducer: number of central jets = " 
@@ -62,8 +64,8 @@ void L1Analysis::L1AnalysisGCT::SetJet(const edm::Handle < L1GctJetCandCollectio
       edm::LogInfo("L1Prompt") << "L1NtupleProducer: number of tau jets = " 
 		<< l1TauJets->size() << std::endl;
     }
-    gct_.FJetSize= l1TauJets->size();//9
-     for (L1GctJetCandCollection::const_iterator tj = l1TauJets->begin();
+    gct_.TJetSize= l1TauJets->size();//9
+      for (L1GctJetCandCollection::const_iterator tj = l1TauJets->begin();
 	 tj != l1TauJets->end(); tj++) {
       //if ( tj->rank() == 0 ) continue;
       gct_.TJetEta.push_back(tj->regionId().ieta());//10
@@ -75,6 +77,30 @@ void L1Analysis::L1AnalysisGCT::SetJet(const edm::Handle < L1GctJetCandCollectio
 			       << tj->regionId().iphi() << ", " << tj->regionId().ieta()
 			       << ", " << tj->rank() << std::endl;
       }
+    }
+
+    // Isolated Tau Jets
+    if (l1IsoTauJets.isValid()){
+
+      if ( verbose_ ) {
+	edm::LogInfo("L1Prompt") << "L1NtupleProducer: number of isoTau jets = " 
+				 << l1IsoTauJets->size() << std::endl;
+      }
+      gct_.IsoTJetSize= l1IsoTauJets->size();//9
+      for (L1GctJetCandCollection::const_iterator tj = l1IsoTauJets->begin();
+	   tj != l1IsoTauJets->end(); tj++) {
+	//if ( tj->rank() == 0 ) continue;
+	gct_.IsoTJetEta.push_back(tj->regionId().ieta());//10
+	gct_.IsoTJetPhi.push_back(tj->regionId().iphi());//11
+	gct_.IsoTJetRnk.push_back(tj->rank());//12
+	gct_.IsoTJetBx .push_back(tj->bx());//
+	if ( verbose_ ) {
+	  edm::LogInfo("L1Prompt") << "L1NtupleProducer: IsoTau jet " 
+				   << tj->regionId().iphi() << ", " << tj->regionId().ieta()
+				   << ", " << tj->rank() << std::endl;
+	}
+      }
+      
     }
   
 }
