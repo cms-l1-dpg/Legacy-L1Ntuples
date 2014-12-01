@@ -2,12 +2,13 @@
 #define L1AlgoFactory_h
 
 #include "L1AnalysisGMTDataFormat.h"
+#include "L1AnalysisGCTDataFormat.h"
 #include "L1AnalysisGTDataFormat.h"
 
 class L1AlgoFactory{
  public:
   L1AlgoFactory();
-  L1AlgoFactory(L1Analysis::L1AnalysisGTDataFormat *gt, L1Analysis::L1AnalysisGMTDataFormat *gmt);
+  L1AlgoFactory(L1Analysis::L1AnalysisGTDataFormat *gt, L1Analysis::L1AnalysisGMTDataFormat *gmt, L1Analysis::L1AnalysisGCTDataFormat *gct);
 
   void setL1JetCorrection(Bool_t isL1JetCorr) {theL1JetCorrection = isL1JetCorr;}
   void setHF(Bool_t isHF) {noHF = isHF;}
@@ -30,7 +31,7 @@ class L1AlgoFactory{
   void SingleJetPt(Float_t& ptcut, Bool_t isCentral = false);
   void DoubleJetPt(Float_t& cut1, Float_t& cut2, Bool_t isCentral = false);
   void DoubleJet_Eta1p7_deltaEta4Pt(Float_t& cut1, Float_t& cut2 );
-  void DoubleTauJetEta2p17Pt(Float_t& cut1, Float_t& cut2);
+  void DoubleTauJetEta2p17Pt(Float_t& cut1, Float_t& cut2, Bool_t isIsolated = false);
   void TripleJetCentralPt(Float_t& cut1, Float_t& cut2, Float_t& cut3);
   Bool_t TripleJet_VBF(Float_t jet1, Float_t jet2, Float_t jet3 );
   void QuadJetPt(Float_t& cut1, Float_t& cut2, Float_t& cut3, Float_t& cut4, Bool_t isCentral = false);
@@ -84,7 +85,7 @@ class L1AlgoFactory{
   Bool_t SingleJet(Float_t ptcut, Bool_t isCentral = false);
   Bool_t DoubleJet(Float_t cut1, Float_t cut2, Bool_t isCentral = false);
   Bool_t DoubleJet_Eta1p7_deltaEta4(Float_t cut1, Float_t cut2 );
-  Bool_t DoubleTauJetEta2p17(Float_t cut1, Float_t cut2);
+  Bool_t DoubleTauJetEta2p17(Float_t cut1, Float_t cut2, Bool_t isIsolated = false);
   Bool_t TripleJetCentral(Float_t cut1, Float_t cut2, Float_t cut3);
   Bool_t QuadJet(Float_t cut1, Float_t cut2, Float_t cut3, Float_t cut4, Bool_t isCentral);
 
@@ -134,6 +135,7 @@ class L1AlgoFactory{
   Bool_t noHF;
   Bool_t NOTauInJets;
 
+  L1Analysis::L1AnalysisGCTDataFormat *gct_;
   L1Analysis::L1AnalysisGMTDataFormat *gmt_;
   L1Analysis::L1AnalysisGTDataFormat  *gt_;
 
@@ -151,10 +153,11 @@ L1AlgoFactory::L1AlgoFactory()
 {
 }
 
-L1AlgoFactory::L1AlgoFactory(L1Analysis::L1AnalysisGTDataFormat *gt, L1Analysis::L1AnalysisGMTDataFormat *gmt)
+L1AlgoFactory::L1AlgoFactory(L1Analysis::L1AnalysisGTDataFormat *gt, L1Analysis::L1AnalysisGMTDataFormat *gmt, L1Analysis::L1AnalysisGCTDataFormat *gct)
 {
   gt_ = gt;
   gmt_ = gmt;
+  gct_ = gct;
   noHF = false;
   NOTauInJets = false;
 }
@@ -277,10 +280,10 @@ Bool_t L1AlgoFactory::DoubleJet_Eta1p7_deltaEta4(Float_t ptcut1, Float_t ptcut2)
   return false;
 }
 
-Bool_t L1AlgoFactory::DoubleTauJetEta2p17(Float_t ptcut1, Float_t ptcut2) {
+Bool_t L1AlgoFactory::DoubleTauJetEta2p17(Float_t ptcut1, Float_t ptcut2, Bool_t isIsolated) {
   Float_t tmp_cut1 = -10.;
   Float_t tmp_cut2 = -10.;
-  DoubleTauJetEta2p17Pt(tmp_cut1,tmp_cut2);
+  DoubleTauJetEta2p17Pt(tmp_cut1,tmp_cut2,isIsolated);
   if(tmp_cut1 >= ptcut1 && tmp_cut2 >= ptcut2) return true;
   return false;
 }
@@ -1190,7 +1193,7 @@ void L1AlgoFactory::DoubleJet_Eta1p7_deltaEta4Pt(Float_t& cut1, Float_t& cut2 ) 
   return;
 }
 
-void L1AlgoFactory::DoubleTauJetEta2p17Pt(Float_t& cut1, Float_t& cut2) {
+void L1AlgoFactory::DoubleTauJetEta2p17Pt(Float_t& cut1, Float_t& cut2, Bool_t isIsolated) {
 
   Float_t maxpt1 = -10.;
   Float_t maxpt2 = -10.;
