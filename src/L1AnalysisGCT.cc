@@ -20,7 +20,7 @@ void L1Analysis::L1AnalysisGCT::SetJet(const edm::Handle < L1GctJetCandCollectio
                   		       const edm::Handle < L1GctJetCandCollection > l1IsoTauJets)
 {   
   // std::cout << "L1IsoTauJets valid: " << l1IsoTauJets.isValid() <<std::endl;
-  edm::LogAbsolute("L1") << "CCLA: " << l1IsoTauJets.isValid() <<std::endl;
+  // edm::LogAbsolute("L1") << "CCLA: " << l1IsoTauJets.isValid() <<std::endl;
     // Central jets
     if ( verbose_ ) {
       edm::LogInfo("L1Prompt") << "L1NtupleProducer: number of central jets = " 
