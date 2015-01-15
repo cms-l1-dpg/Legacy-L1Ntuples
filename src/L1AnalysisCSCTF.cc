@@ -334,7 +334,7 @@ void L1Analysis::L1AnalysisCSCTF::SetLCTs(const edm::Handle<CSCCorrelatedLCTDigi
           csctf_.lctlocalPhi.push_back(lclPhi.phi_local);
           //csctf_.lctlocalPhi_bend.push_back(lclPhi.phi_bend_local);
           //csctf_.lctCLCT_pattern.push_back(lct->getPattern());
-          csctf_.lctQuality.push_back(lct->getPattern());
+          csctf_.lctQuality.push_back(lct->getQuality());
           //std::cout <<"localPhi: lclPhi.phi_bend_local = " << lclPhi.phi_bend_local << std::endl;
           //std::cout <<"localPhi: lct->getBend() = " << lct->getBend() << std::endl;
           

@@ -32,7 +32,7 @@ class L1AlgoFactory{
   void DoubleJetPt(Float_t& cut1, Float_t& cut2, Bool_t isCentral = false);
   void DoubleJet_Eta1p7_deltaEta4Pt(Float_t& cut1, Float_t& cut2 );
   void DoubleTauJetEta2p17Pt(Float_t& cut1, Float_t& cut2, Bool_t isIsolated = false);
-  void TripleJetCentralPt(Float_t& cut1, Float_t& cut2, Float_t& cut3);
+  void TripleJetPt(Float_t& cut1, Float_t& cut2, Float_t& cut3, Bool_t isCentral = false);
   Bool_t TripleJet_VBF(Float_t jet1, Float_t jet2, Float_t jet3 );
   void QuadJetPt(Float_t& cut1, Float_t& cut2, Float_t& cut3, Float_t& cut4, Bool_t isCentral = false);
 
@@ -86,7 +86,7 @@ class L1AlgoFactory{
   Bool_t DoubleJet(Float_t cut1, Float_t cut2, Bool_t isCentral = false);
   Bool_t DoubleJet_Eta1p7_deltaEta4(Float_t cut1, Float_t cut2 );
   Bool_t DoubleTauJetEta2p17(Float_t cut1, Float_t cut2, Bool_t isIsolated = false);
-  Bool_t TripleJetCentral(Float_t cut1, Float_t cut2, Float_t cut3);
+  Bool_t TripleJet(Float_t cut1, Float_t cut2, Float_t cut3, Bool_t isCentral = false);
   Bool_t QuadJet(Float_t cut1, Float_t cut2, Float_t cut3, Float_t cut4, Bool_t isCentral);
 
   Bool_t ETM(Float_t ETMcut);
@@ -288,11 +288,11 @@ Bool_t L1AlgoFactory::DoubleTauJetEta2p17(Float_t ptcut1, Float_t ptcut2, Bool_t
   return false;
 }
 
-Bool_t L1AlgoFactory::TripleJetCentral(Float_t ptcut1, Float_t ptcut2, Float_t ptcut3) {
+Bool_t L1AlgoFactory::TripleJet(Float_t ptcut1, Float_t ptcut2, Float_t ptcut3, Bool_t isCentral) {
   Float_t tmp_cut1 = -10.;
   Float_t tmp_cut2 = -10.;
   Float_t tmp_cut3 = -10.;
-  TripleJetCentralPt(tmp_cut1,tmp_cut2,tmp_cut3);
+  TripleJetPt(tmp_cut1,tmp_cut2,tmp_cut3,isCentral);
   if(tmp_cut1 >= ptcut1 && tmp_cut2 >= ptcut2 && tmp_cut3 >= ptcut3) return true;
   return false;
 }
@@ -1227,7 +1227,7 @@ void L1AlgoFactory::DoubleTauJetEta2p17Pt(Float_t& cut1, Float_t& cut2, Bool_t i
   return;
 }
 
-void L1AlgoFactory::TripleJetCentralPt(Float_t& cut1, Float_t& cut2, Float_t& cut3) {
+void L1AlgoFactory::TripleJetPt(Float_t& cut1, Float_t& cut2, Float_t& cut3, Bool_t isCentral) {
 
   Float_t jet1ptmax = -10.;
   Float_t jet2ptmax = -10.;
@@ -1240,7 +1240,7 @@ void L1AlgoFactory::TripleJetCentralPt(Float_t& cut1, Float_t& cut2, Float_t& cu
     Int_t bx = gt_ -> Bxjet[ue];        		
     if(bx != 0) continue;
     Bool_t isFwdJet = gt_ -> Fwdjet[ue];
-    if(isFwdJet) continue;
+    if(isFwdJet && isCentral) continue;
     if(NOTauInJets && gt_->Taujet[ue]) continue;
     if(noHF && (gt_->Etajet[ue] < 5 || gt_->Etajet[ue] > 17)) continue;
     Float_t rank = gt_ -> Rankjet[ue];
