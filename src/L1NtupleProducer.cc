@@ -224,10 +224,10 @@ void L1NtupleProducer::analyze(const edm::Event& e, const edm::EventSetup& es) {
 
 void L1NtupleProducer::analyzeEvent(const edm::Event& e) { 
   
-
+  if(hltSource_.label() != "none"){
     pL1evt->Reset();
     pL1evt->Set(e,hltSource_); 
-
+  }
 }
 
 void L1NtupleProducer::analyzeGenerator(const edm::Event& e) {
