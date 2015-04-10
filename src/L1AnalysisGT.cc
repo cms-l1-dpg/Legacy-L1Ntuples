@@ -45,6 +45,9 @@ void L1Analysis::L1AnalysisGT::Set(const L1GlobalTriggerReadoutRecord* gtrr)
       const L1GtPsbWord psb = gtrr->gtPsbWord(0xbb0d, ibx);
       const L1GtPsbWord psb2 = gtrr->gtPsbWord(0xbb0e, ibx);
 
+    L1GtfeWord gtfeWord = gtrr->gtfeWord();
+
+    gt_.gtfeBx = gtfeWord.bxNr();
 
 // ------ ETT, ETM, HTT and HTM from PSB14:
 
