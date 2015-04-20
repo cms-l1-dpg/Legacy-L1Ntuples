@@ -10,7 +10,6 @@ class L1AlgoFactory{
   L1AlgoFactory();
   L1AlgoFactory(L1Analysis::L1AnalysisGTDataFormat *gt, L1Analysis::L1AnalysisGMTDataFormat *gmt, L1Analysis::L1AnalysisGCTDataFormat *gct);
 
-  void setL1JetCorrection(Bool_t isL1JetCorr) {theL1JetCorrection = isL1JetCorr;}
   void setHF(Bool_t isHF) {noHF = isHF;}
   void setTau(Bool_t isTauInJet) {NOTauInJets = isTauInJet;}
 
@@ -123,14 +122,12 @@ class L1AlgoFactory{
 
   inline Bool_t correlateInPhi(Int_t jetphi, Int_t muphi, Int_t delta=1);
   inline Bool_t correlateInEta(Int_t mueta, Int_t jeteta, Int_t delta=1);
-  Double_t CorrectedL1JetPtByGCTregions(Double_t JetiEta,Double_t JetPt);
   Int_t etaMuIdx(Double_t eta);
   Int_t phiINjetCoord(Double_t phi);
   Int_t etaINjetCoord(Double_t eta);
   inline Double_t degree(Double_t radian);
 
  private:
-  Bool_t theL1JetCorrection;
 
   Bool_t noHF;
   Bool_t NOTauInJets;
@@ -569,40 +566,6 @@ inline Double_t L1AlgoFactory::degree(Double_t radian) {
     return 360.+(radian/acos(-1.)*180.);
   else
     return radian/acos(-1.)*180.;
-}
-
-// correction for RCT->GCT bins (from HCAL January 2012)
-// HF from 29-41, first 3 HF trigger towers 3 iEtas, last highest eta HF trigger tower 4 iEtas; each trigger tower is 0.5 eta, RCT iEta from 0->21 (left->right)
-Double_t L1AlgoFactory::CorrectedL1JetPtByGCTregions(Double_t JetiEta,Double_t JetPt) {
-
-  static const Double_t JetRCTHFiEtacorr[]  = {0.965,0.943,0.936,0.929}; // from HF iEta=29 to 41 (smaller->higher HF iEta)
-  Double_t JetPtcorr   = JetPt;
-
-  if (theL1JetCorrection) {
-
-    if ((JetiEta>=7 && JetiEta<=14)) {
-      JetPtcorr = JetPt * 1.05;
-    }
-
-    if ((JetiEta>=4 && JetiEta<=6) || (JetiEta>=15 && JetiEta<=17)) {
-      JetPtcorr = JetPt * 0.95;
-    }
-
-    if (JetiEta==0 || JetiEta==21) {
-      JetPtcorr = JetPt * (1+(1-JetRCTHFiEtacorr[3]));
-    }
-    else if (JetiEta==1 || JetiEta==20) {
-      JetPtcorr = JetPt * (1+(1-JetRCTHFiEtacorr[2]));
-    }
-    else if (JetiEta==2 || JetiEta==19) {
-      JetPtcorr = JetPt * (1+(1-JetRCTHFiEtacorr[1]));
-    }
-    else if (JetiEta==3 || JetiEta==18) {
-      JetPtcorr = JetPt * (1+(1-JetRCTHFiEtacorr[0]));
-    }
-  }
-
-  return JetPtcorr;
 }
 
 void L1AlgoFactory::SingleMuPt(Float_t& ptcut, Int_t qualmin) {
@@ -1083,8 +1046,7 @@ void L1AlgoFactory::SingleJetPt(Float_t& cut, Bool_t isCentral) {
     if(NOTauInJets && gt_->Taujet[ue]) continue;
     if(isCentral && noHF && (gt_->Etajet[ue] < 5 || gt_->Etajet[ue] > 17)) continue;
 
-    Float_t rank = gt_ -> Rankjet[ue];
-    Float_t pt = CorrectedL1JetPtByGCTregions(gt_->Etajet[ue],rank*4.);
+    Float_t pt = gt_ -> Rankjet[ue]*4.;
     if(pt >= ptmax) ptmax = pt;
   }
 
@@ -1108,8 +1070,7 @@ void L1AlgoFactory::DoubleJetPt(Float_t& cut1, Float_t& cut2, Bool_t isCentral )
     if(NOTauInJets && gt_->Taujet[ue]) continue;
     if(isCentral && noHF && (gt_->Etajet[ue] < 5 || gt_->Etajet[ue] > 17)) continue;
 
-    Float_t rank = gt_ -> Rankjet[ue];
-    Float_t pt = CorrectedL1JetPtByGCTregions(gt_->Etajet[ue],rank*4.);
+    Float_t pt = gt_ -> Rankjet[ue]*4.;
 
     if(pt >= maxpt1)
       {
@@ -1145,8 +1106,7 @@ void L1AlgoFactory::DoubleJet_Eta1p7_deltaEta4Pt(Float_t& cut1, Float_t& cut2 ) 
     if(NOTauInJets && gt_->Taujet[ue]) continue;
     if(noHF && (gt_->Etajet[ue] < 5 || gt_->Etajet[ue] > 17)) continue;
 
-    Float_t rank = gt_ -> Rankjet[ue];
-    Float_t pt = CorrectedL1JetPtByGCTregions(gt_->Etajet[ue],rank*4.);
+    Float_t pt = gt_ -> Rankjet[ue]*4.;
     Float_t eta1 = gt_ -> Etajet[ue];
     if (eta1 < 5.5 || eta1 > 16.5) continue;  // eta = 6 - 16
 
@@ -1159,8 +1119,7 @@ void L1AlgoFactory::DoubleJet_Eta1p7_deltaEta4Pt(Float_t& cut1, Float_t& cut2 ) 
       if(NOTauInJets && gt_->Taujet[ve]) continue;
       if(noHF && (gt_->Etajet[ve] < 5 || gt_->Etajet[ve] > 17)) continue;
 
-      Float_t rank2 = gt_ -> Rankjet[ve];
-      Float_t pt2 = rank2 * 4;
+      Float_t pt2 = gt_ -> Rankjet[ve]*4.;
       Float_t eta2 = gt_ -> Etajet[ve];
       if(eta2 < 5.5 || eta2 > 16.5) continue;  // eta = 6 - 16
 
@@ -1198,17 +1157,19 @@ void L1AlgoFactory::DoubleTauJetEta2p17Pt(Float_t& cut1, Float_t& cut2, Bool_t i
   Float_t maxpt1 = -10.;
   Float_t maxpt2 = -10.;
 
-  Int_t Nj = gt_ -> Njet ;
+  Int_t Nj;
+  if(!isIsolated) Nj = gt_ -> Njet;
+  else Nj = gct_->IsoTJetSize;
+
   if(Nj < 2) return;
 
   for(Int_t ue=0; ue < Nj; ue++) {
-    Int_t bx = gt_ -> Bxjet[ue];        		
+    Int_t bx = isIsolated ? gct_->IsoTJetBx[ue] : gt_ -> Bxjet[ue];        		
     if(bx != 0) continue; 
-    Bool_t isTauJet = gt_ -> Taujet[ue];
-    if(!isTauJet) continue;
-    Float_t rank = gt_ -> Rankjet[ue];    // the rank of the electron
-    Float_t pt = CorrectedL1JetPtByGCTregions(gt_->Etajet[ue],rank*4.);
-    Float_t eta = gt_ -> Etajet[ue];
+    if(!isIsolated && !gt_ -> Taujet[ue]) continue;
+    Float_t rank = isIsolated ? gct_->IsoTJetRnk[ue] : gt_ -> Rankjet[ue];
+    Float_t pt = rank*4.;
+    Float_t eta = isIsolated ? gct_->IsoTJetEta[ue] : gt_ -> Etajet[ue];
     if(eta < 4.5 || eta > 16.5) continue;  // eta = 5 - 16
 
     if(pt >= maxpt1)
@@ -1243,8 +1204,7 @@ void L1AlgoFactory::TripleJetPt(Float_t& cut1, Float_t& cut2, Float_t& cut3, Boo
     if(isFwdJet && isCentral) continue;
     if(NOTauInJets && gt_->Taujet[ue]) continue;
     if(noHF && (gt_->Etajet[ue] < 5 || gt_->Etajet[ue] > 17)) continue;
-    Float_t rank = gt_ -> Rankjet[ue];
-    Float_t pt = CorrectedL1JetPtByGCTregions(gt_->Etajet[ue],rank*4.);
+    Float_t pt = gt_ -> Rankjet[ue]*4.;
 
     if(pt >= jet1ptmax)
       {
@@ -1292,8 +1252,7 @@ Bool_t L1AlgoFactory::TripleJet_VBF(Float_t jet1, Float_t jet2, Float_t jet3 ) {
     if(NOTauInJets && gt_->Taujet[ue]) continue;
 
     Bool_t isFwdJet = gt_ -> Fwdjet[ue];
-    Float_t rank = gt_ -> Rankjet[ue];
-    Float_t pt = CorrectedL1JetPtByGCTregions(gt_->Etajet[ue],rank*4.);
+    Float_t pt = gt_ -> Rankjet[ue]*4.;
 
     if (isFwdJet) {
       if(pt >= jet1) f1++;
@@ -1332,8 +1291,7 @@ void L1AlgoFactory::QuadJetPt(Float_t& cut1, Float_t& cut2, Float_t& cut3, Float
     if(NOTauInJets && gt_->Taujet[ue]) continue;
     if(isCentral && noHF && (gt_->Etajet[ue] < 5 || gt_->Etajet[ue] > 17)) continue;
 
-    Float_t rank = gt_ -> Rankjet[ue];
-    Float_t pt = CorrectedL1JetPtByGCTregions(gt_->Etajet[ue],rank*4.);
+    Float_t pt = gt_ -> Rankjet[ue]*4.;
 
     if(pt >= jet1ptmax)
       {
@@ -1409,8 +1367,7 @@ void L1AlgoFactory::ETMVal_NoQCD(Float_t& ETMcut ) {
     if(bx != 0) continue;
     if(gt_->Taujet[ue]) continue;
 
-    Float_t rank = gt_ -> Rankjet[ue];
-    Float_t pt = CorrectedL1JetPtByGCTregions(gt_->Etajet[ue],rank*4.);
+    Float_t pt = gt_ -> Rankjet[ue]*4.;
     if(pt < 52.) continue;
 
     Float_t phijet = gt_->Phijet[ue];
@@ -1570,8 +1527,7 @@ void L1AlgoFactory::Mu_DoubleJetCentralPt(Float_t& mucut, Float_t& jetcut) {
     if(NOTauInJets && gt_->Taujet[ue]) continue;
     if(noHF && (gt_->Etajet[ue] < 5 || gt_->Etajet[ue] > 17)) continue;
 
-    Float_t rank = gt_ -> Rankjet[ue];
-    Float_t pt = CorrectedL1JetPtByGCTregions(gt_->Etajet[ue],rank*4.);
+    Float_t pt = gt_ -> Rankjet[ue]*4.;
 
     if(pt >= jetptmax1){
       jetptmax2 = jetptmax1;
@@ -1615,8 +1571,7 @@ void L1AlgoFactory::Muer_JetCentralPt(Float_t& mucut, Float_t& jetcut) {
     if(NOTauInJets && gt_->Taujet[ue]) continue;
     if(noHF && (gt_->Etajet[ue] < 5 || gt_->Etajet[ue] > 17)) continue;
 
-    Float_t rank = gt_ -> Rankjet[ue];
-    Float_t pt = CorrectedL1JetPtByGCTregions(gt_->Etajet[ue],rank*4.);
+    Float_t pt = gt_ -> Rankjet[ue]*4.;
     if (pt >= jetptmax) jetptmax = pt;
   }
 
@@ -1656,8 +1611,7 @@ void L1AlgoFactory::Mu_JetCentral_deltaPt(Float_t& mucut, Float_t& jetcut) {
       if(NOTauInJets && gt_->Taujet[ue]) continue;
       if(noHF && (gt_->Etajet[ue] < 5 || gt_->Etajet[ue] > 17)) continue;
 
-      Float_t rank = gt_ -> Rankjet[ue];
-      Float_t ptj = CorrectedL1JetPtByGCTregions(gt_->Etajet[ue],rank*4.);
+      Float_t ptj = gt_ -> Rankjet[ue]*4.;
       Float_t phijet = gt_ -> Phijet[ue];
       Int_t iphi_jet = (int)phijet;
       Float_t etajet = gt_ -> Etajet[ue];
@@ -1781,8 +1735,7 @@ void L1AlgoFactory::EG_FwdJetPt(Float_t& EGcut, Float_t& FWcut) {
     Bool_t isFwdJet = gt_ -> Fwdjet[ue];
     if(!isFwdJet) continue;
     if(NOTauInJets && gt_->Taujet[ue]) continue;
-    Float_t rank = gt_ -> Rankjet[ue];
-    Float_t pt = CorrectedL1JetPtByGCTregions(gt_->Etajet[ue],rank*4.);
+    Float_t pt = gt_ -> Rankjet[ue]*4.;
     if (pt >= jetptmax) jetptmax = pt;
   }
 
@@ -1819,8 +1772,7 @@ void L1AlgoFactory::EG_DoubleJetCentralPt(Float_t& EGcut, Float_t& jetcut) {
     if(NOTauInJets && gt_->Taujet[ue]) continue;
     if(noHF && (gt_->Etajet[ue] < 5 || gt_->Etajet[ue] > 17)) continue;
 
-    Float_t rank = gt_ -> Rankjet[ue];
-    Float_t pt = CorrectedL1JetPtByGCTregions(gt_->Etajet[ue],rank*4.);
+    Float_t pt = gt_ -> Rankjet[ue]*4.;
 
     if(pt >= jetptmax1){
       jetptmax2 = jetptmax1;
@@ -1869,8 +1821,7 @@ void L1AlgoFactory::EGer_TripleJetCentralPt(Float_t& EGcut, Float_t& jetcut) {
     if(NOTauInJets && gt_->Taujet[ue]) continue;
     if(noHF && (gt_->Etajet[ue] < 5 || gt_->Etajet[ue] > 17)) continue;
 
-    Float_t rank = gt_ -> Rankjet[ue];
-    Float_t pt = CorrectedL1JetPtByGCTregions(gt_->Etajet[ue],rank*4.);
+    Float_t pt = gt_ -> Rankjet[ue]*4.;
     Float_t jeteta = gt_->Etajet[ue];
     if(jeteta == elemaxeta) continue;   //both are binned with the same binning
 
@@ -1944,8 +1895,7 @@ void L1AlgoFactory::Jet_MuOpen_Mu_dPhiMuMu1Pt(Float_t& jetcut, Float_t& mucut) {
     Int_t bxjet = gt_ -> Bxjet[ue];        		
     if(bxjet != 0) continue;
     if(NOTauInJets && gt_->Taujet[ue]) continue;
-    Float_t rank = gt_ -> Rankjet[ue];
-    Float_t pt = CorrectedL1JetPtByGCTregions(gt_->Etajet[ue],rank*4.);
+    Float_t pt = gt_ -> Rankjet[ue]*4.;
     if(pt < jetptmax) continue;
     Float_t phijet = gt_->Phijet[ue];
 
@@ -2031,8 +1981,7 @@ void L1AlgoFactory::Jet_MuOpen_EG_dPhiMuEG1Pt(Float_t& jetcut, Float_t& egcut){
     Int_t bxjet = gt_ -> Bxjet[ue];        		
     if(bxjet != 0) continue;
     if(NOTauInJets && gt_->Taujet[ue]) continue;
-    Float_t rank = gt_ -> Rankjet[ue];
-    Float_t pt = CorrectedL1JetPtByGCTregions(gt_->Etajet[ue],rank*4.);
+    Float_t pt = gt_ -> Rankjet[ue]*4.;
     if(pt < jetptmax) continue;
     Float_t phijet = gt_->Phijet[ue];
 
@@ -2104,8 +2053,7 @@ void L1AlgoFactory::DoubleJetCentral_ETMPt(Float_t& jetcut1, Float_t& jetcut2, F
     if(isFwdJet) continue;
     if(NOTauInJets && gt_->Taujet[ue]) continue;
     if(noHF && (gt_->Etajet[ue] < 5 || gt_->Etajet[ue] > 17)) continue;
-    Float_t rank = gt_ -> Rankjet[ue];
-    Float_t pt = CorrectedL1JetPtByGCTregions(gt_->Etajet[ue],rank*4.);
+    Float_t pt = gt_ -> Rankjet[ue]*4.;
 
     if(pt >= jetptmax1){
       jetptmax2 = jetptmax1;
@@ -2146,9 +2094,8 @@ void L1AlgoFactory::Muer_TauJetEta2p17Pt(Float_t& mucut, Float_t& taucut) {
     Int_t bx = gt_ -> Bxjet[ue];        		
     if(bx != 0) continue; 
     Bool_t isTauJet = gt_ -> Taujet[ue];
-    if(!isTauJet) continue;
-    Float_t rank = gt_ -> Rankjet[ue];    // the rank of the electron
-    Float_t pt = CorrectedL1JetPtByGCTregions(gt_->Etajet[ue],rank*4.);
+    if(!isTauJet && NOTauInJets) continue;
+    Float_t pt = gt_ -> Rankjet[ue]*4.;
     Float_t eta = gt_ -> Etajet[ue];
     if(eta < 4.5 || eta > 16.5) continue;  // eta = 5 - 16
 
@@ -2191,8 +2138,7 @@ void L1AlgoFactory::IsoEGer_TauJetEta2p17Pt(Float_t& egcut, Float_t& taucut) {
     if(bx != 0) continue; 
     Bool_t isTauJet = gt_ -> Taujet[ue];
     if(!isTauJet) continue;
-    Float_t rank = gt_ -> Rankjet[ue];    // the rank of the jet
-    Float_t pt = CorrectedL1JetPtByGCTregions(gt_->Etajet[ue],rank*4.);
+    Float_t pt = gt_ -> Rankjet[ue]*4.;
     Float_t eta = gt_ -> Etajet[ue];
     if(eta < 4.5 || eta > 16.5) continue;  // eta = 5 - 16
 
@@ -2228,8 +2174,7 @@ void L1AlgoFactory::QuadJetCentral_TauJetPt(Float_t& jetcut, Float_t& taucut){
     if(NOTauInJets && gt_->Taujet[ue]) continue;
     if(noHF && (gt_->Etajet[ue] < 5 || gt_->Etajet[ue] > 17)) continue;
 
-    Float_t rank = gt_ -> Rankjet[ue];
-    Float_t pt = CorrectedL1JetPtByGCTregions(gt_->Etajet[ue],rank*4.);
+    Float_t pt = gt_->Rankjet[ue]*4.;
 
     if(pt >= jet1ptmax)
       {
@@ -2255,8 +2200,7 @@ void L1AlgoFactory::QuadJetCentral_TauJetPt(Float_t& jetcut, Float_t& taucut){
     if(bx != 0) continue; 
     Bool_t isTauJet = gt_ -> Taujet[ue];
     if(!isTauJet) continue;
-    Float_t rank = gt_ -> Rankjet[ue];    // the rank of the jet
-    Float_t pt = CorrectedL1JetPtByGCTregions(gt_->Etajet[ue],rank*4.);
+    Float_t pt = gt_->Rankjet[ue]*4.;
     if(pt >= maxpttau) maxpttau = pt;
   }
 
@@ -2290,8 +2234,7 @@ void L1AlgoFactory::DoubleJetC_deltaPhi7_HTTPt(Float_t& jetcut, Float_t& httcut)
     if(NOTauInJets && gt_->Taujet[ue]) continue;
     if(noHF && (gt_->Etajet[ue] < 5 || gt_->Etajet[ue] > 17)) continue;
 
-    Float_t rank = gt_ -> Rankjet[ue];
-    Float_t pt = CorrectedL1JetPtByGCTregions(gt_->Etajet[ue],rank*4.);
+    Float_t pt = gt_->Rankjet[ue]*4.;
     Float_t phi1 = gt_ -> Phijet[ue];
 
     for(Int_t ve=0; ve < Nj; ve++) {
@@ -2303,8 +2246,7 @@ void L1AlgoFactory::DoubleJetC_deltaPhi7_HTTPt(Float_t& jetcut, Float_t& httcut)
       if(NOTauInJets && gt_->Taujet[ve]) continue;
       if(noHF && (gt_->Etajet[ve] < 5 || gt_->Etajet[ve] > 17)) continue;
 
-      Float_t rank2 = gt_->Rankjet[ve];
-      Float_t pt2 = rank2*4.;
+      Float_t pt2 = gt_->Rankjet[ve]*4.;
       Float_t phi2 = gt_->Phijet[ve];
 
       if(correlateInPhi((int)phi1, (int)phi2, 7)){
@@ -2400,8 +2342,7 @@ void L1AlgoFactory::Muer_ETM_JetCPt(Float_t& mucut, Float_t& ETMcut, Float_t& je
     if(NOTauInJets && gt_->Taujet[ue]) continue;
     if(noHF && (gt_->Etajet[ue] < 5 || gt_->Etajet[ue] > 17)) continue;
 
-    Float_t rank = gt_ -> Rankjet[ue];
-    Float_t pt = CorrectedL1JetPtByGCTregions(gt_->Etajet[ue],rank*4.);
+    Float_t pt = gt_->Rankjet[ue]*4.;
     if(pt >= jetptmax) jetptmax = pt;
   }
 
