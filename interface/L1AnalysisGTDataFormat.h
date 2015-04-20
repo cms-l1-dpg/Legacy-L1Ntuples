@@ -37,6 +37,8 @@ namespace L1Analysis
        bsttotalIntensityBeam1=0;   
        bsttotalIntensityBeam2=0; 
 
+       gtfeBx=0;
+
     	//PSB info
        Nele = 0;
        Bxel.clear();
@@ -84,7 +86,9 @@ namespace L1Analysis
     unsigned long bstbeamMomentum;	
     unsigned long bsttotalIntensityBeam1;   
     unsigned long bsttotalIntensityBeam2; 
-    
+
+    int gtfeBx;
+
     //PSB info
     int            Nele;
     std::vector<int>    Bxel;
