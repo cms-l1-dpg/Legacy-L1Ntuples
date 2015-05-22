@@ -15,7 +15,8 @@ process.load('Configuration/StandardSequences/EndOfProcess_cff')
 process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 process.load('Configuration/StandardSequences/MagneticField_AutoFromDBCurrent_cff')
 process.load("JetMETCorrections.Configuration.DefaultJEC_cff")
-process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
+## process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
+process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
 
 # output file
 process.TFileService = cms.Service("TFileService",
@@ -52,7 +53,9 @@ process.p = cms.Path(
 )
 
 # job options
-process.GlobalTag.globaltag = 'GR_R_52_V7::All'
+from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
+## process.GlobalTag.globaltag = 'GR_R_52_V7::All'
+process.GlobalTag.globaltag = 'GR_R_52_V7'
 
 SkipEvent = cms.untracked.vstring('ProductNotFound')
 
