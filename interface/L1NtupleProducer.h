@@ -4,14 +4,14 @@
 //   \class L1NtupleProducer
 /**
  *   Description:  This code is designed for l1 prompt analysis
-//                 starting point is a GMTTreeMaker By Ivan Mikulec. 
-*/                
+//                 starting point is a GMTTreeMaker By Ivan Mikulec.
+*/
 //   $Date: 2010/09/15 10:06:12 $
 //   $Revision: 1.15 $
 //
 //   I. Mikulec            HEPHY Vienna
 //
-//   06/01/2010 - A.C. Le Bihan : 
+//   06/01/2010 - A.C. Le Bihan :
 //   migration to L1Analysis classes...
 //
 //--------------------------------------------------
@@ -72,7 +72,7 @@ class TTree;
 
 class L1NtupleProducer : public edm::EDAnalyzer {
 
- 
+
   public:
 
    // constructor
@@ -85,9 +85,9 @@ class L1NtupleProducer : public edm::EDAnalyzer {
       virtual void endJob();
 
   private:
-      
+
       void book();
-      void initCSCTF(); 
+      void initCSCTF();
       void analyzeEvent(const edm::Event& e);
       void analyzeGenerator(const edm::Event& e);
       void analyzeSimulation(const edm::Event& e);
@@ -101,73 +101,73 @@ class L1NtupleProducer : public edm::EDAnalyzer {
       void analyzeHCAL(const edm::Event& e, const edm::EventSetup&);
 
    // Event info
-    
-      L1Analysis::L1AnalysisEvent* pL1evt; 
-      L1Analysis::L1AnalysisEventDataFormat* pL1evt_data; 
-   	
+
+      L1Analysis::L1AnalysisEvent* pL1evt;
+      L1Analysis::L1AnalysisEventDataFormat* pL1evt_data;
+
       edm::InputTag hltSource_;
 
-   // Generator info  
-    
+   // Generator info
+
       edm::InputTag generatorSource_;
       L1Analysis::L1AnalysisGenerator* pL1generator;
       L1Analysis::L1AnalysisGeneratorDataFormat* pL1generator_data;
-      
+
    // Simulation info
-    
+
       edm::InputTag simulationSource_;
       L1Analysis::L1AnalysisSimulation* pL1simulation;
       L1Analysis::L1AnalysisSimulationDataFormat* pL1simulation_data;
-       
+
    // GMT data
-    
+
       edm::InputTag gmtSource_;
       L1Analysis::L1AnalysisGMT* pL1gmt;
       L1Analysis::L1AnalysisGMTDataFormat* pL1gmt_data;
-       
+
    // GT data
-       
+
       edm::InputTag gtEvmSource_;
       edm::InputTag gtSource_;
       L1Analysis::L1AnalysisGT* pL1gt;
       L1Analysis::L1AnalysisGTDataFormat* pL1gt_data;
-      
+
    // GCT data
-     
+
       edm::InputTag gctCenJetsSource_ ;
       edm::InputTag gctForJetsSource_ ;
       edm::InputTag gctTauJetsSource_ ;
       edm::InputTag gctIsoTauJetsSource_ ;
       edm::InputTag gctEnergySumsSource_;
       edm::InputTag gctIsoEmSource_ ;
-      edm::InputTag gctNonIsoEmSource_ ;   
+      edm::InputTag gctNonIsoEmSource_ ;
       L1Analysis::L1AnalysisGCT* pL1gct;
       L1Analysis::L1AnalysisGCTDataFormat* pL1gct_data;
-       
+
    // RCT data
-        
-      edm::InputTag rctSource_; 
+
+      edm::InputTag rctSource_;
       L1Analysis::L1AnalysisRCT* pL1rct;
       L1Analysis::L1AnalysisRCTDataFormat* pL1rct_data;
-       
+
    // DTTF data
-      
-      edm::InputTag dttfSource_; 
+
+      edm::InputTag dttfSource_;
       L1Analysis::L1AnalysisDTTF* pL1dttf;
       L1Analysis::L1AnalysisDTTFDataFormat* pL1dttf_data;
-  
+
    // CSCTF data
-      
-      edm::InputTag csctfTrkSource_; 
-      edm::InputTag csctfLCTSource_; 
-      edm::InputTag csctfStatusSource_; 
-      edm::InputTag csctfDTStubsSource_; 
+
+      edm::InputTag csctfTrkSource_;
+      edm::InputTag csctfLCTSource_;
+      edm::InputTag csctfStatusSource_;
+      edm::InputTag csctfDTStubsSource_;
       L1Analysis::L1AnalysisCSCTF* pL1csctf;
       L1Analysis::L1AnalysisCSCTFDataFormat* pL1csctf_data;
-      CSCSectorReceiverLUT* srLUTs_[5][2];
+      CSCSectorReceiverLUT* srLUTs_[5][2][6];
       CSCTFPtLUT* csctfPtLUTs_;
       bool initCSCTFPtLutsPSet;
-      edm::ParameterSet csctfPtLutsPSet;     
+      edm::ParameterSet csctfPtLutsPSet;
       const L1MuTriggerScales  *ts;
       const L1MuTriggerPtScale *tpts;
       unsigned long long m_scalesCacheID ;
@@ -182,13 +182,13 @@ class L1NtupleProducer : public edm::EDAnalyzer {
       unsigned long long ecalScaleCacheID_;
       unsigned long long hcalScaleCacheID_;
 
-   //   
+   //
       edm::Service<TFileService> tfs_;
       TTree* tree_;
-    
+
       bool physVal_;
       bool verbose_;
-      
+
       unsigned int maxGEN_;
       unsigned int maxGT_;
       unsigned int maxRCTREG_;
