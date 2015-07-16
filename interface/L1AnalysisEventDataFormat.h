@@ -42,6 +42,7 @@ namespace L1Analysis
     std::vector<TString> hlt;
 
     double puWeight;
+    double nPV;
     
   }; 
 }
