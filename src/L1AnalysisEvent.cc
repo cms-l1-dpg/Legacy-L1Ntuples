@@ -68,7 +68,7 @@ void L1Analysis::L1AnalysisEvent::Set(const edm::Event& e, const edm::InputTag& 
   // do PU re-weighting for MC only
   double weight = 1.;
 
-  if (doPUWeights_ && (! e.eventAuxiliary().isRealData())) {
+  if (! e.eventAuxiliary().isRealData()) {
 
     edm::Handle<std::vector< PileupSummaryInfo > >  puInfo;
     e.getByLabel(edm::InputTag("addPileupInfo"), puInfo);
@@ -88,19 +88,16 @@ void L1Analysis::L1AnalysisEvent::Set(const edm::Event& e, const edm::InputTag& 
 	}
 	
       }
+
+      event_.nPV = npv;
       
-      weight = lumiWeights_.weight( npv );
-      if (maxAllowedWeight_ > 0. && weight > maxAllowedWeight_) 
-	weight = maxAllowedWeight_;
-      
+      if(doPUWeights_) weight = lumiWeights_.weight( npv );
+      if(doPUWeights_ && maxAllowedWeight_ > 0. && weight > maxAllowedWeight_) weight = maxAllowedWeight_;
     }
 
   }
 
   event_.puWeight = weight;
-
-
-
 
 }
 

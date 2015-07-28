@@ -32,7 +32,7 @@ class L1AlgoFactory{
   void DoubleJet_Eta1p7_deltaEta4Pt(Float_t& cut1, Float_t& cut2 );
   void DoubleTauJetEta2p17Pt(Float_t& cut1, Float_t& cut2, Bool_t isIsolated = false);
   void TripleJetPt(Float_t& cut1, Float_t& cut2, Float_t& cut3, Bool_t isCentral = false);
-  Bool_t TripleJet_VBF(Float_t jet1, Float_t jet2, Float_t jet3 );
+  Bool_t TripleJet_VBF(Float_t jet1, Float_t jet2, Float_t jet3, Int_t jetclass = 0);
   void QuadJetPt(Float_t& cut1, Float_t& cut2, Float_t& cut3, Float_t& cut4, Bool_t isCentral = false);
 
   void Mu_EGPt(Float_t& mucut, Float_t& EGcut, Bool_t isIsolated = false, Int_t qualmin=4);
@@ -1229,11 +1229,18 @@ void L1AlgoFactory::TripleJetPt(Float_t& cut1, Float_t& cut2, Float_t& cut3, Boo
 }
 
 //For now, only usable in Menu mode
-Bool_t L1AlgoFactory::TripleJet_VBF(Float_t jet1, Float_t jet2, Float_t jet3 ) {
+Bool_t L1AlgoFactory::TripleJet_VBF(Float_t jet1, Float_t jet2, Float_t jet3, Int_t jetclass ) {
 
-  Bool_t jet=false;        
+  Bool_t jet=false;
+  Bool_t jetf=false;
+
+  Bool_t jetc1=false;
+  Bool_t jetc2=false;
+  Bool_t jetc3=false;
+
   Bool_t jetf1=false;           
-  Bool_t jetf2=false;   
+  Bool_t jetf2=false;
+  Bool_t jetf3=false;
 
   Int_t n1=0;
   Int_t n2=0;
@@ -1266,11 +1273,28 @@ Bool_t L1AlgoFactory::TripleJet_VBF(Float_t jet1, Float_t jet2, Float_t jet3 ) {
     }    
   }
 
-  jet   = ( n1 >= 1 && n2 >= 2 && n3 >= 3 ) ;        
-  jetf1 = ( f1 >= 1 && n2 >= 1 && n3 >= 2 ) ;  // numbers change ofcourse    
-  jetf2 = ( n1 >= 1 && f2 >= 1 && n3 >= 2 ) ;  
+  jet   = ( n1 >= 1 && n2 >= 2 && n3 >= 3 );
+  jetf  = ( f1 >= 1 && f2 >= 2 && f3 >= 3 );
+
+  jetc1 = ( n1 >= 1 && f2 >= 1 && f3 >= 2 );
+  jetc2 = ( f1 >= 1 && n2 >= 1 && f3 >= 2 );
+  jetc3 = ( f1 >= 1 && f2 >= 1 && n3 >= 2 );
+
+  jetf1 = ( f1 >= 1 && n2 >= 1 && n3 >= 2 );
+  jetf2 = ( n1 >= 1 && f2 >= 1 && n3 >= 2 );  
+  jetf3 = ( n1 >= 1 && n2 >= 1 && f3 >= 2 );  
+
+  if(jetclass == 1) return jet;
+  else if(jetclass == 2) return jetf1;
+  else if(jetclass == 3) return jetf2;
+  else if(jetclass == 4) return jetf3;
+  else if(jetclass == 5) return jetc1;
+  else if(jetclass == 6) return jetc2;
+  else if(jetclass == 7) return jetc3;
+  else if(jetclass == 8) return jetf;
 
   return ( jet || jetf1 || jetf2 );
+  //return ( jet || jetf1 || jetf2 || jetf3 || jetc1 || jetc2 || jetc3);
 }
 
 void L1AlgoFactory::QuadJetPt(Float_t& cut1, Float_t& cut2, Float_t& cut3, Float_t& cut4, Bool_t isCentral){
@@ -1290,7 +1314,6 @@ void L1AlgoFactory::QuadJetPt(Float_t& cut1, Float_t& cut2, Float_t& cut3, Float
     if(isCentral && isFwdJet) continue;
     if(NOTauInJets && gt_->Taujet[ue]) continue;
     if(isCentral && noHF && (gt_->Etajet[ue] < 5 || gt_->Etajet[ue] > 17)) continue;
-
     Float_t pt = gt_ -> Rankjet[ue]*4.;
 
     if(pt >= jet1ptmax)
