@@ -44,7 +44,7 @@ class L1AlgoFactory{
   void Mu_DoubleJetCentralPt(Float_t& mucut, Float_t& jetcut);
   void Mu_HTTPt(Float_t& mucut, Float_t& HTcut );
   void Muer_ETMPt(Float_t& mucut, Float_t& ETMcut );
-  void Muer_TauJetEta2p17Pt(Float_t& mucut, Float_t& taucut);
+  void Muer_TauJetEta2p17Pt(Float_t& mucut, Float_t& taucut, Bool_t isIsolated = false);
   void Muer_ETM_HTTPt(Float_t& mucut, Float_t& ETMcut, Float_t& HTTcut);
   void Muer_ETM_JetCPt(Float_t& mucut, Float_t& ETMcut, Float_t& jetcut);
 
@@ -103,7 +103,7 @@ class L1AlgoFactory{
   Bool_t Mu_DoubleJetCentral(Float_t mucut, Float_t jetcut);
   Bool_t Mu_HTT(Float_t mucut, Float_t HTcut);
   Bool_t Muer_ETM(Float_t mucut, Float_t ETMcut);
-  Bool_t Muer_TauJetEta2p17(Float_t mucut, Float_t taucut);
+  Bool_t Muer_TauJetEta2p17(Float_t mucut, Float_t taucut, Bool_t isIsolated = false);
   Bool_t Muer_ETM_HTT(Float_t mucut, Float_t ETMcut, Float_t HTTcut);
   Bool_t Muer_ETM_JetC(Float_t mucut, Float_t ETMcut, Float_t jetcut);
 
@@ -468,10 +468,10 @@ Bool_t L1AlgoFactory::DoubleJetCentral_ETM(Float_t jetcut1, Float_t jetcut2, Flo
   return false;
 }
 
-Bool_t L1AlgoFactory::Muer_TauJetEta2p17(Float_t mucut, Float_t taucut){
+Bool_t L1AlgoFactory::Muer_TauJetEta2p17(Float_t mucut, Float_t taucut, Bool_t isIsolated){
   Float_t tmp_mucut  = -10.;
   Float_t tmp_taucut = -10.;
-  Muer_TauJetEta2p17Pt(tmp_mucut, tmp_taucut);
+  Muer_TauJetEta2p17Pt(tmp_mucut, tmp_taucut,isIsolated);
   if(tmp_mucut >= mucut && tmp_taucut >= taucut) return true;
   return false;
 }
@@ -1293,7 +1293,7 @@ Bool_t L1AlgoFactory::TripleJet_VBF(Float_t jet1, Float_t jet2, Float_t jet3, In
   else if(jetclass == 7) return jetc3;
   else if(jetclass == 8) return jetf;
 
-  return ( jet || jetf1 || jetf2 );
+  return ( jet || jetf1 || jetf2 || jetf3 );
   //return ( jet || jetf1 || jetf2 || jetf3 || jetc1 || jetc2 || jetc3);
 }
 
@@ -2094,7 +2094,7 @@ void L1AlgoFactory::DoubleJetCentral_ETMPt(Float_t& jetcut1, Float_t& jetcut2, F
   return;
 }
 
-void L1AlgoFactory::Muer_TauJetEta2p17Pt(Float_t& mucut, Float_t& taucut) {
+void L1AlgoFactory::Muer_TauJetEta2p17Pt(Float_t& mucut, Float_t& taucut, Bool_t isIsolated) {
 
   Float_t maxptmu  = -10.;
   Float_t maxpttau = -10.;
@@ -2113,13 +2113,17 @@ void L1AlgoFactory::Muer_TauJetEta2p17Pt(Float_t& mucut, Float_t& taucut) {
   }
 
   Int_t Nj = gt_ -> Njet ;
+  if(!isIsolated) Nj = gt_ -> Njet;
+  else Nj = gct_->IsoTJetSize;
+
   for(Int_t ue=0; ue < Nj; ue++) {
-    Int_t bx = gt_ -> Bxjet[ue];        		
+    Int_t bx = isIsolated ? gct_->IsoTJetBx[ue] : gt_ -> Bxjet[ue];        		
     if(bx != 0) continue; 
-    Bool_t isTauJet = gt_ -> Taujet[ue];
-    if(!isTauJet && NOTauInJets) continue;
-    Float_t pt = gt_ -> Rankjet[ue]*4.;
-    Float_t eta = gt_ -> Etajet[ue];
+    if(!isIsolated && !gt_ -> Taujet[ue]) continue;
+
+    Float_t rank = isIsolated ? gct_->IsoTJetRnk[ue] : gt_ -> Rankjet[ue];
+    Float_t pt = rank*4.;
+    Float_t eta = isIsolated ? gct_->IsoTJetEta[ue] : gt_ -> Etajet[ue];
     if(eta < 4.5 || eta > 16.5) continue;  // eta = 5 - 16
 
     if(pt >= maxpttau) maxpttau = pt;
@@ -2131,6 +2135,7 @@ void L1AlgoFactory::Muer_TauJetEta2p17Pt(Float_t& mucut, Float_t& taucut) {
   }
 
   return;
+
 }
 
 void L1AlgoFactory::IsoEGer_TauJetEta2p17Pt(Float_t& egcut, Float_t& taucut) {
