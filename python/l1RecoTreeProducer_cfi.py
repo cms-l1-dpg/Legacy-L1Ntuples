@@ -17,7 +17,7 @@ l1RecoTreeProducer = cms.EDAnalyzer("L1RecoTreeProducer",
   #jetCorrectorServiceName = cms.untracked.string("ak5CaloL1L2L3Residual"),
 
   maxCl  = cms.uint32(20),
-  maxVtx = cms.uint32(10),
+  maxVtx = cms.uint32(50),
   maxJet = cms.uint32(20),
   maxTrk = cms.uint32(100),
 
