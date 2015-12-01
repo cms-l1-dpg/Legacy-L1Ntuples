@@ -20,11 +20,11 @@ l1MuonRecoTreeProducer = cms.EDAnalyzer("L1MuonRecoTreeProducer",
   # TString; up to now the first found match (per run) is used.
   isoTriggerNames = cms.vstring(
         "HLT_IsoMu17_eta2p1_v*",
-        "HLT_IsoMu17_v*"
+        "HLT_IsoMu17_v*",
         "HLT_IsoMu20_eta2p1_v*",
-        "HLT_IsoMu20_v*"
+        "HLT_IsoMu20_v*",
         "HLT_IsoMu24_eta2p1_v*",
-        "HLT_IsoMu24_v*"
+        "HLT_IsoMu24_v*",
         "HLT_IsoMu27_eta2p1_v*",
         "HLT_IsoMu27_v*"
         ),
@@ -34,9 +34,7 @@ l1MuonRecoTreeProducer = cms.EDAnalyzer("L1MuonRecoTreeProducer",
         "HLT_Mu20_v*",
         "HLT_Mu24_v*",
         "HLT_Mu27_v*",
-        "HLT_Mu30_v*",
         "HLT_Mu34_v*",
-        "HLT_Mu40_v*",
         "HLT_L1SingleMu*"
         ),
 
